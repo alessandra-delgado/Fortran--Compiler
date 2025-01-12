@@ -1,0 +1,12 @@
+println ((let x = 10 in x) + (let x = 20 in let y = 30 in x+y))
+println (100 / 2)
+println (2 / 100)
+set x = 10
+println (x)
+set y = x * (x+1) / 2
+println (y)
+println ((let x = 10 in x) + (let x = 20 in let y = 30 in x+y))
+set x = 20
+println (x)
+set x = x + (let x = 3 in x) + x
+println (x)

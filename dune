@@ -1,0 +1,21 @@
+;; Lexer
+(ocamllex
+ (modules lexer))
+
+;; Tokens -- Necessita de estar separado das regras devido a dependencias ciclicas entre o Lexer e o Parser
+
+;; Gera o Parser e junta os ficheiros tokens.mly e parser.mly num só
+
+(menhir
+ (modules parser)
+ (merge_into parser))
+
+;; Gera o executavel teste.exe
+(executable
+ (name main)
+ (modules_without_implementation ast))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))
