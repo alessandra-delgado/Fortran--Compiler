@@ -1,20 +1,28 @@
-println ((let x = 10 in x) + (let x = 20 in let y = 30 in x+y))
-println (100 / 2)
-println (2 / 100)
+if 1 > 0 then 
+    println(1)
+    else
+        println(0)
+end if
+if 5 then 
+    println(9)
+    println(100)
+end if
+
 set x = 10
-println (x)
-set y = x * (x+1) / 2
-println (y)
-println ((let x = 10 in x) + (let x = 20 in let y = 30 in x+y))
-set x = 20
-println (x)
-set x = x + (let x = 3 in x) + x
-println (x)
-println (7<10)
-println (7!=0)
-println (7!=7)
-println (7==6)
-println (7==7)
-println (0 > -2)
-println (0 < (7 > 2))
-println (4==4==6)
+
+if x > 0 then
+    if x != 10 then
+        println(x)
+    end if
+end if
+
+if x != 0 then
+    set x = 0
+    println(x+1)
+    println(x)
+    set x = 1
+    if x == 0 then 
+        println(x)
+    else println(404)
+    end if
+end if

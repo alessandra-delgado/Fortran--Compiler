@@ -11,6 +11,7 @@ exception VarUndef of string
 (* Tamanho em byte da frame (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 let lif = ref 0
+let lcond = ref 0
 let lloop = ref 0
 let lfun = ref 0
 
@@ -78,21 +79,22 @@ let compile_expr e =
       | Lt -> jl
       | _ -> failwith "Not implemented"
     in
-    lif := !lif + 1; (*increment lif no.*)
+    lcond := !lcond + 1; (*increment lcond no.*)
+    let lcond = !lcond in
     comprec env next e1 ++
     comprec env next e2 ++
 
     popq rax ++ (*e2*)
     popq rbx ++ (*e1*)
     cmpq (reg rax) (reg rbx) ++
-    op (Printf.sprintf ".condition_true%d" !lif) ++
+    op (Printf.sprintf ".condition_true%d" lcond) ++
     pushq (imm 0) ++
-    jmp (Printf.sprintf ".condition_end%d" !lif) ++
+    jmp (Printf.sprintf ".condition_end%d" lcond) ++
 
-    label (Printf.sprintf ".condition_true%d" !lif) ++
+    label (Printf.sprintf ".condition_true%d" lcond) ++
       pushq (imm 1) ++
     
-    label (Printf.sprintf ".condition_end%d" !lif)
+    label (Printf.sprintf ".condition_end%d" lcond)
       
     | Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;
@@ -107,7 +109,7 @@ let compile_expr e =
   comprec StrMap.empty 0 e
 
 (* Compilação de uma instrução *)
-let compile_instr = function
+let rec compile_instr = function
   | Set (x, e) ->
     Hashtbl.replace genv x ();
     compile_expr e ++
@@ -127,15 +129,37 @@ let compile_instr = function
     call "print_int"
 
   | Ifelse (e, i1, i2) ->
-      compile_expr e ++ 
-      (*bruh i gotta do boolean type shit hold on*)
-      nop
+    lif := !lif + 1;
+    let lif = !lif in
+    compile_expr e ++ (*relational expr*)
+    popq rax ++
+    cmpq (imm 0) (reg rax) ++
+    jne (Printf.sprintf ".if_true%d" lif) ++
 
+    let code = List.map compile_instr i2 in
+    let code = List.fold_left  (++) nop code in
+    code ++
+    jmp (Printf.sprintf ".if_end%d" lif) ++
 
-      
+    label ( Printf.sprintf ".if_true%d" lif) ++
+      let code = List.map compile_instr i1 in
+      let code = List.fold_left  (++) nop code in
+      code ++
+    
+    label (Printf.sprintf ".if_end%d" lif) 
+
   | If (e, i) ->
-      nop (*por implementar*)
-
+    lif := !lif + 1;
+    let lif = !lif in
+    compile_expr e ++
+    popq rax ++
+    cmpq (imm 0) (reg rax) ++
+    je (Printf.sprintf ".if_end%d" lif) ++
+      label (Printf.sprintf ".if_true%d" lif) ++
+        let code = List.map compile_instr i in
+        let code = List.fold_left (++) nop code in
+        code ++
+    label (Printf.sprintf ".if_end%d" lif) 
 
 (* Compila o programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
