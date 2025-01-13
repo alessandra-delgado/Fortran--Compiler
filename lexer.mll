@@ -29,15 +29,15 @@ rule token = parse
   | '-'     { MINUS }
   | '*'     { TIMES }
   | '/'     { DIV }
-  | '='     { EQ }
-  (* boolean -? *)
-  | "=="    { EQQ }
-  | ">="    { BEQ }
-  | '>'     { BT }
-  | "<="    { LEQ }
+  | '='     { ASSIGN }
+  (* relational ------ *)
+  | "=="    { EQ }
+  | ">="    { GE }
+  | '>'     { GT }
+  | "<="    { LE }
   | '<'     { LT }
-  | '!'     { NOT }
-  (*         -- *)
+  | "!="    { NE }
+  (*------------------ *)
   | '('     { LP }
   | ')'     { RP }
   | integer as s { CST (int_of_string s) }

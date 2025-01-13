@@ -20,7 +20,7 @@ let options =
    "-o", Arg.String (set_file ofile),
    "<file>  Para indicar o nome do ficheiro em saída"]
 
-let usage = "usage: arithc [option] file.exp"
+let usage = "usage: arithc [option] file.fmm"
 
 (* localiza um erro indicando a linha e a coluna *)
 let localisation pos =
@@ -35,16 +35,16 @@ let () =
   (* Verifica-se que o nome do ficheiro fonte foi bem introduzido *)
   if !ifile="" then begin eprintf "Nenhum ficheiro para compilar\n@?"; exit 1 end;
 
-  (* Este ficheiro deve ter como extensão  .exp *)
-  if not (Filename.check_suffix !ifile ".exp") then begin
-    eprintf "O ficheiro em entrada deve ter a extensão .exp\n@?";
+  (* Este ficheiro deve ter como extensão  .fmm *)
+  if not (Filename.check_suffix !ifile ".fmm") then begin
+    eprintf "O ficheiro em entrada deve ter a extensão .fmm\n@?";
     Arg.usage options usage;
     exit 1
   end;
 
    (* Por omissão, o ficheiro alvo tem o mesmo nome que o ficheiro fonte,
      só muda a extensão *)
-  if !ofile="" then ofile := Filename.chop_suffix !ifile ".exp" ^ ".s";
+  if !ofile="" then ofile := Filename.chop_suffix !ifile ".fmm" ^ ".s";
 
   (* Abertura do ficheiro fonte em leitura *)
   let f = open_in !ifile in

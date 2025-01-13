@@ -1,0 +1,28 @@
+if 1 > 0 then 
+    println(1)
+    else
+        println(0)
+end if
+if 5 then 
+    println(9)
+    println(100)
+end if
+
+set x = 10
+
+if x > 0 then
+    if x != 10 then
+        println(x)
+    end if
+end if
+
+if x != 0 then
+    set x = 0
+    println(x+1)
+    println(x)
+    set x = 1
+    if x == 0 then 
+        println(x)
+    else println(404)
+    end if
+end if
