@@ -126,6 +126,135 @@ main:
 	pushq x
 	popq %rdi
 	call println_int
+	pushq $7
+	pushq $10
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	jl .condition_true1
+	pushq $0
+	jmp .condition_end1
+.condition_true1:
+	pushq $1
+.condition_end1:
+	popq %rdi
+	call println_int
+	pushq $7
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	jne .condition_true2
+	pushq $0
+	jmp .condition_end2
+.condition_true2:
+	pushq $1
+.condition_end2:
+	popq %rdi
+	call println_int
+	pushq $7
+	pushq $7
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	jne .condition_true3
+	pushq $0
+	jmp .condition_end3
+.condition_true3:
+	pushq $1
+.condition_end3:
+	popq %rdi
+	call println_int
+	pushq $7
+	pushq $6
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	je .condition_true4
+	pushq $0
+	jmp .condition_end4
+.condition_true4:
+	pushq $1
+.condition_end4:
+	popq %rdi
+	call println_int
+	pushq $7
+	pushq $7
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	je .condition_true5
+	pushq $0
+	jmp .condition_end5
+.condition_true5:
+	pushq $1
+.condition_end5:
+	popq %rdi
+	call println_int
+	pushq $0
+	pushq $0
+	pushq $2
+	popq %rax
+	popq %rbx
+	subq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	jg .condition_true6
+	pushq $0
+	jmp .condition_end6
+.condition_true6:
+	pushq $1
+.condition_end6:
+	popq %rdi
+	call println_int
+	pushq $0
+	pushq $7
+	pushq $2
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	jg .condition_true8
+	pushq $0
+	jmp .condition_end8
+.condition_true8:
+	pushq $1
+.condition_end8:
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	jl .condition_true7
+	pushq $0
+	jmp .condition_end7
+.condition_true7:
+	pushq $1
+.condition_end7:
+	popq %rdi
+	call println_int
+	pushq $4
+	pushq $4
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	je .condition_true10
+	pushq $0
+	jmp .condition_end10
+.condition_true10:
+	pushq $1
+.condition_end10:
+	pushq $6
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	je .condition_true9
+	pushq $0
+	jmp .condition_end9
+.condition_true9:
+	pushq $1
+.condition_end9:
+	popq %rdi
+	call println_int
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp

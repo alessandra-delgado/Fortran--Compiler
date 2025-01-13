@@ -10,3 +10,11 @@ set x = 20
 println (x)
 set x = x + (let x = 3 in x) + x
 println (x)
+println (7<10)
+println (7!=0)
+println (7!=7)
+println (7==6)
+println (7==7)
+println (0 > -2)
+println (0 < (7 > 2))
+println (4==4==6)

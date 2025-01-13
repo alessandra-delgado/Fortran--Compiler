@@ -10,7 +10,9 @@ exception VarUndef of string
 
 (* Tamanho em byte da frame (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
-let lbl = ref 
+let lif = ref 0
+let lloop = ref 0
+let lfun = ref 0
 
 (* As variáveis globais estão arquivadas numa HashTable *)
 let (genv : (string, unit) Hashtbl.t) = Hashtbl.create 17
@@ -32,8 +34,8 @@ let compile_expr e =
       pushq (imm i)
     | Var x ->
 
-      begin
-        try 
+    begin
+      try 
         let ofs = StrMap.find x env in
         movq (ind ~ofs:(-ofs) rbp) (reg rax) ++
         pushq (reg rax)
@@ -50,7 +52,7 @@ let compile_expr e =
       popq rax ++
       idivq (reg rbx) ++
       pushq (reg rax)
-    | Binop (o, e1, e2)->
+    | Binop (Add|Sub|Mul as o, e1, e2)->
       let op = match o with
        | Add -> addq
        | Sub -> subq
@@ -62,10 +64,36 @@ let compile_expr e =
       comprec env next e2 ++
       popq rax ++
       popq rbx ++
-  
+      
       op (reg rax) (reg rbx) ++
       pushq (reg rbx)
 
+    | Binop (Eq|Ne|Ge|Gt|Le|Lt as o, e1, e2) -> 
+      let op = match o with
+      | Eq -> je 
+      | Ne -> jne
+      | Ge -> jge
+      | Gt -> jg
+      | Le -> jle
+      | Lt -> jl
+      | _ -> failwith "Not implemented"
+    in
+    lif := !lif + 1; (*increment lif no.*)
+    comprec env next e1 ++
+    comprec env next e2 ++
+
+    popq rax ++ (*e2*)
+    popq rbx ++ (*e1*)
+    cmpq (reg rax) (reg rbx) ++
+    op (Printf.sprintf ".condition_true%d" !lif) ++
+    pushq (imm 0) ++
+    jmp (Printf.sprintf ".condition_end%d" !lif) ++
+
+    label (Printf.sprintf ".condition_true%d" !lif) ++
+      pushq (imm 1) ++
+    
+    label (Printf.sprintf ".condition_end%d" !lif)
+      
     | Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;
 
@@ -74,6 +102,7 @@ let compile_expr e =
         movq (reg rax) (ind ~ofs:(-next) rbp) ++
         
         comprec (StrMap.add x next env) (next + 8) e2
+    
   in
   comprec StrMap.empty 0 e
 
