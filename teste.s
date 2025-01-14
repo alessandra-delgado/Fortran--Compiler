@@ -9,12 +9,9 @@ main:
 	popq %rax
 	popq %rbx
 	cmpq %rax, %rbx
-	jg .condition_true1
-	pushq $0
-	jmp .condition_end1
-.condition_true1:
-	pushq $1
-.condition_end1:
+	setg %al
+	movzbq %al, %rax
+	pushq %rax
 	popq %rax
 	cmpq $0, %rax
 	jne .if_true1
@@ -47,12 +44,9 @@ main:
 	popq %rax
 	popq %rbx
 	cmpq %rax, %rbx
-	jg .condition_true3
-	pushq $0
-	jmp .condition_end3
-.condition_true3:
-	pushq $1
-.condition_end3:
+	setg %al
+	movzbq %al, %rax
+	pushq %rax
 	popq %rax
 	cmpq $0, %rax
 	je .if_end3
@@ -62,12 +56,9 @@ main:
 	popq %rax
 	popq %rbx
 	cmpq %rax, %rbx
-	jne .condition_true2
-	pushq $0
-	jmp .condition_end2
-.condition_true2:
-	pushq $1
-.condition_end2:
+	setne %al
+	movzbq %al, %rax
+	pushq %rax
 	popq %rax
 	cmpq $0, %rax
 	je .if_end4
@@ -82,12 +73,9 @@ main:
 	popq %rax
 	popq %rbx
 	cmpq %rax, %rbx
-	jne .condition_true5
-	pushq $0
-	jmp .condition_end5
-.condition_true5:
-	pushq $1
-.condition_end5:
+	setne %al
+	movzbq %al, %rax
+	pushq %rax
 	popq %rax
 	cmpq $0, %rax
 	je .if_end5
@@ -114,12 +102,9 @@ main:
 	popq %rax
 	popq %rbx
 	cmpq %rax, %rbx
-	je .condition_true4
-	pushq $0
-	jmp .condition_end4
-.condition_true4:
-	pushq $1
-.condition_end4:
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
 	popq %rax
 	cmpq $0, %rax
 	jne .if_true6
