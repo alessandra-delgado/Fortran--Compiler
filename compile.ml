@@ -11,6 +11,7 @@ exception VarUndef of string
 (* Tamanho em byte da frame (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 let lif = ref 0
+let lbool = ref 0
 let lloop = ref 0
 let lfun = ref 0
 
@@ -52,6 +53,7 @@ let compile_expr e =
       popq rax ++
       idivq (reg rbx) ++
       pushq (reg rax)
+
     | Binop (Add|Sub|Mul as o, e1, e2)->
       let op = match o with
        | Add -> addq
@@ -87,6 +89,44 @@ let compile_expr e =
     set (reg al) ++
     movzbq (reg al) rax ++
     pushq (reg rax)
+
+
+    | Binop (Or, e1, e2) ->
+      lbool := !lbool + 1;
+      let lbool = !lbool in
+      comprec env next e1 ++
+      popq rax ++
+      cmpq (imm 0) (reg rax) ++
+      jne (Printf.sprintf ".bool_true%d" lbool) ++
+      pushq (imm 0) ++
+      jmp (Printf.sprintf ".bool_end%d" lbool) ++
+
+      label (Printf.sprintf ".bool_true%d" lbool) ++
+        comprec env next e2 ++
+        popq rax ++
+        cmpq (imm 0) (reg rax) ++
+        jne (Printf.sprintf ".bool_end%d" lbool) ++
+        pushq (imm 0) ++
+      label (Printf.sprintf ".bool_end%d" lbool)
+
+      | Binop (And, e1, e2) ->
+        lbool := !lbool + 1;
+        let lbool = !lbool in
+        comprec env next e1 ++
+        popq rax ++
+        cmpq (imm 0) (reg rax) ++
+        jne (Printf.sprintf ".bool_true%d" lbool) ++
+        pushq (imm 0) ++
+        jmp (Printf.sprintf ".bool_end%d" lbool) ++
+  
+        label (Printf.sprintf ".bool_true%d" lbool) ++
+          comprec env next e2 ++
+          popq rax ++
+          cmpq (imm 0) (reg rax) ++
+          jne (Printf.sprintf ".bool_end%d" lbool) ++
+          pushq (imm 0) ++
+        label (Printf.sprintf ".bool_end%d" lbool)
+    
       
     | Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;

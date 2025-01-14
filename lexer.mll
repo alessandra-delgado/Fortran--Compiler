@@ -37,7 +37,10 @@ rule token = parse
   | "<="    { LE }
   | '<'     { LT }
   | "!="    { NE }
-  (*------------------ *)
+  (* boolean ---------- *)
+  | "or"    { OR }
+  | "and"   { AND }
+  (* ------------------ *)
   | '('     { LP }
   | ')'     { RP }
   | integer as s { CST (int_of_string s) }

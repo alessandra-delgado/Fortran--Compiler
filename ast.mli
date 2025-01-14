@@ -15,4 +15,4 @@ and expr =
   | Binop of binop * expr * expr
   | Letin of string * expr * expr
 
-and binop = Add | Sub | Mul | Div | Eq | Ge | Gt | Le | Lt | Ne
+and binop = Add | Sub | Mul | Div | Eq | Ge | Gt | Le | Lt | Ne | Or | And
