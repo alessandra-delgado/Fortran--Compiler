@@ -11,7 +11,6 @@ exception VarUndef of string
 (* Tamanho em byte da frame (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 let lif = ref 0
-let lcond = ref 0
 let lloop = ref 0
 let lfun = ref 0
 
@@ -70,31 +69,24 @@ let compile_expr e =
       pushq (reg rbx)
 
     | Binop (Eq|Ne|Ge|Gt|Le|Lt as o, e1, e2) -> 
-      let op = match o with
-      | Eq -> je 
-      | Ne -> jne
-      | Ge -> jge
-      | Gt -> jg
-      | Le -> jle
-      | Lt -> jl
+      let set = match o with
+      | Eq -> sete
+      | Ne -> setne
+      | Ge -> setge
+      | Gt -> setg
+      | Le -> setle
+      | Lt -> setl
       | _ -> failwith "Not implemented"
     in
-    lcond := !lcond + 1; (*increment lcond no.*)
-    let lcond = !lcond in
     comprec env next e1 ++
     comprec env next e2 ++
 
     popq rax ++ (*e2*)
     popq rbx ++ (*e1*)
     cmpq (reg rax) (reg rbx) ++
-    op (Printf.sprintf ".condition_true%d" lcond) ++
-    pushq (imm 0) ++
-    jmp (Printf.sprintf ".condition_end%d" lcond) ++
-
-    label (Printf.sprintf ".condition_true%d" lcond) ++
-      pushq (imm 1) ++
-    
-    label (Printf.sprintf ".condition_end%d" lcond)
+    set (reg al) ++
+    movzbq (reg al) rax ++
+    pushq (reg rax)
       
     | Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;
