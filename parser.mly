@@ -13,14 +13,15 @@
 %token PLUS MINUS TIMES DIV
 %token ASSIGN
 %token IF, THEN, ELSE, END
-%token EQ, GE, GT, LE, LT, NE, OR, AND
+%token EQ, GE, GT, LE, LT, NE
+%token AND, OR
 
 /* Definição das prioridades e associatividades dos tokens */
 
 %nonassoc IN
 %left PLUS MINUS
 %left TIMES DIV
-%left EQ GE GT LE LT NE OR AND
+%left OR AND EQ GE GT LE LT NE
 %nonassoc uminus
 
 /* Ponto de entrada da gramática */
@@ -70,8 +71,8 @@ expr:
 | GE {Ge}
 | LT {Lt}
 | LE {Le}
-| OR { Or }
-| AND { And }
+| OR {Or}
+| AND {And}
 ;
 
 

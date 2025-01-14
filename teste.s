@@ -118,6 +118,135 @@ main:
 	call println_int
 .if_end6:
 .if_end5:
+	pushq $1
+	popq %rax
+	movq %rax, x
+	pushq $11111111
+	popq %rdi
+	call println_int
+	pushq $1
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne .if_true7
+	pushq $0
+	popq %rdi
+	call println_int
+	jmp .if_end7
+.if_true7:
+	pushq $2
+	popq %rdi
+	call println_int
+.if_end7:
+	pushq $1
+	pushq $1
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne .if_true8
+	pushq $0
+	popq %rdi
+	call println_int
+	jmp .if_end8
+.if_true8:
+	pushq $2
+	popq %rdi
+	call println_int
+.if_end8:
+	pushq $0
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne .bool_true1
+	pushq $0
+	jmp .bool_end1
+.bool_true1:
+	pushq $0
+	popq %rax
+	cmpq $0, %rax
+	jne .bool_end1
+	pushq $0
+.bool_end1:
+	pushq $1
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne .if_true9
+	pushq $0
+	popq %rdi
+	call println_int
+	jmp .if_end9
+.if_true9:
+	pushq $2
+	popq %rdi
+	call println_int
+.if_end9:
+	pushq $1
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .bool_false2
+	pushq $1
+	jmp .bool_end2
+.bool_false2:
+	pushq $0
+	popq %rax
+	cmpq $0, %rax
+	je .bool_end2
+	pushq $1
+.bool_end2:
+	pushq $0
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne .if_true10
+	pushq $0
+	popq %rdi
+	call println_int
+	jmp .if_end10
+.if_true10:
+	pushq $2
+	popq %rdi
+	call println_int
+.if_end10:
+	pushq $11111111
+	popq %rdi
+	call println_int
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp
