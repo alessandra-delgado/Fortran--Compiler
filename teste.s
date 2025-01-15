@@ -178,13 +178,14 @@ main:
 	pushq $0
 	jmp .bool_end1
 .bool_true1:
+	pushq $1
 	pushq $0
 	popq %rax
 	cmpq $0, %rax
 	jne .bool_end1
+	popq %rax
 	pushq $0
 .bool_end1:
-	pushq $1
 	pushq $0
 	popq %rax
 	popq %rbx
@@ -219,12 +220,13 @@ main:
 	jmp .bool_end2
 .bool_false2:
 	pushq $0
+	pushq $0
 	popq %rax
 	cmpq $0, %rax
 	je .bool_end2
+	popq %rax
 	pushq $1
 .bool_end2:
-	pushq $0
 	pushq $0
 	popq %rax
 	popq %rbx
@@ -244,6 +246,33 @@ main:
 	popq %rdi
 	call println_int
 .if_end10:
+	pushq $1
+	popq %rax
+	cmpq $0, %rax
+	jne .bool_true3
+	pushq $0
+	jmp .bool_end3
+.bool_true3:
+	pushq $1
+	pushq $0
+	popq %rax
+	cmpq $0, %rax
+	jne .bool_end3
+	popq %rax
+	pushq $0
+.bool_end3:
+	popq %rax
+	cmpq $0, %rax
+	jne .if_true11
+	pushq $0
+	popq %rdi
+	call println_int
+	jmp .if_end11
+.if_true11:
+	pushq $2
+	popq %rdi
+	call println_int
+.if_end11:
 	pushq $11111111
 	popq %rdi
 	call println_int

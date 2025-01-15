@@ -107,7 +107,8 @@ let compile_expr e =
         popq rax ++
         cmpq (imm 0) (reg rax) ++
         je (Printf.sprintf ".bool_end%d" lbool) ++
-        movq (imm 1) (reg rbp) ++
+        popq rax ++ 
+        pushq (imm 1) ++
 
       label (Printf.sprintf ".bool_end%d" lbool)
 
@@ -127,7 +128,8 @@ let compile_expr e =
         popq rax ++
         cmpq (imm 0) (reg rax) ++
         jne (Printf.sprintf ".bool_end%d" lbool) ++
-        movq (imm 0) (reg rbp) ++
+        popq rax ++
+        pushq (imm 0) ++
           
       label (Printf.sprintf ".bool_end%d" lbool)
     
