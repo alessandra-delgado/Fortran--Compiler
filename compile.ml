@@ -90,48 +90,26 @@ let compile_expr e =
     movzbq (reg al) rax ++
     pushq (reg rax)
 
+    | Binop(Or|And as o, e1, e2) ->
+      let jump, value = match o with 
+      | Or -> je, 1
+      | And -> jne, 0
+      | _ -> failwith "Not implemented"
+    in
 
-    | Binop (Or, e1, e2) ->
-      lbool := !lbool + 1;
-      let lbool = !lbool in
-      comprec env next e1 ++
-      popq rax ++
-      cmpq (imm 0) (reg rax) ++
-      je (Printf.sprintf ".bool_false%d" lbool)++
-      pushq (imm 1) ++
-      jmp (Printf.sprintf ".bool_end%d" lbool) ++
+    lbool := !lbool + 1;
+    let lbool = !lbool in
+    comprec env next e1 ++
+    popq rax ++
+    cmpq (imm 0) (reg rax) ++
+    jump (Printf.sprintf ".bool_condition%d" lbool)++
+    pushq (imm value) ++
+    jmp (Printf.sprintf ".bool_end%d" lbool) ++
 
-      label (Printf.sprintf ".bool_false%d" lbool) ++
-        pushq (imm 0) ++
-        comprec env next e2 ++
-        popq rax ++
-        cmpq (imm 0) (reg rax) ++
-        je (Printf.sprintf ".bool_end%d" lbool) ++
-        popq rax ++ 
-        pushq (imm 1) ++
-
-      label (Printf.sprintf ".bool_end%d" lbool)
-
-    | Binop (And, e1, e2) ->
-      lbool := !lbool + 1;
-      let lbool = !lbool in
-      comprec env next e1 ++
-      popq rax ++
-      cmpq (imm 0) (reg rax) ++
-      jne (Printf.sprintf ".bool_true%d" lbool)++
-      pushq (imm 0) ++
-      jmp (Printf.sprintf ".bool_end%d" lbool) ++
-
-      label (Printf.sprintf ".bool_true%d" lbool) ++
-        pushq (imm 1) ++
-        comprec env next e2 ++
-        popq rax ++
-        cmpq (imm 0) (reg rax) ++
-        jne (Printf.sprintf ".bool_end%d" lbool) ++
-        popq rax ++
-        pushq (imm 0) ++
+    label (Printf.sprintf ".bool_condition%d" lbool) ++
+      comprec env next e2 ++
           
-      label (Printf.sprintf ".bool_end%d" lbool)
+    label (Printf.sprintf ".bool_end%d" lbool)
     
       
     | Letin (x, e1, e2) ->

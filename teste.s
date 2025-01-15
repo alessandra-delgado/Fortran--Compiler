@@ -174,16 +174,10 @@ main:
 	pushq %rax
 	popq %rax
 	cmpq $0, %rax
-	jne .bool_true1
+	jne .bool_condition1
 	pushq $0
 	jmp .bool_end1
-.bool_true1:
-	pushq $1
-	pushq $0
-	popq %rax
-	cmpq $0, %rax
-	jne .bool_end1
-	popq %rax
+.bool_condition1:
 	pushq $0
 .bool_end1:
 	pushq $0
@@ -215,17 +209,11 @@ main:
 	pushq %rax
 	popq %rax
 	cmpq $0, %rax
-	je .bool_false2
+	je .bool_condition2
 	pushq $1
 	jmp .bool_end2
-.bool_false2:
+.bool_condition2:
 	pushq $0
-	pushq $0
-	popq %rax
-	cmpq $0, %rax
-	je .bool_end2
-	popq %rax
-	pushq $1
 .bool_end2:
 	pushq $0
 	popq %rax
@@ -249,16 +237,10 @@ main:
 	pushq $1
 	popq %rax
 	cmpq $0, %rax
-	jne .bool_true3
+	jne .bool_condition3
 	pushq $0
 	jmp .bool_end3
-.bool_true3:
-	pushq $1
-	pushq $0
-	popq %rax
-	cmpq $0, %rax
-	jne .bool_end3
-	popq %rax
+.bool_condition3:
 	pushq $0
 .bool_end3:
 	popq %rax
