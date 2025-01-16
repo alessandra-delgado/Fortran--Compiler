@@ -330,6 +330,42 @@ main:
 	pushq $11111111
 	popq %rdi
 	call println_int
+	pushq $10
+	pushq $5
+	movq $0, %rdx
+	popq %rbx
+	popq %rax
+	idivq %rbx
+	pushq %rdx
+	popq %rdi
+	call println_int
+	pushq $5
+	pushq $3
+	movq $0, %rdx
+	popq %rbx
+	popq %rax
+	idivq %rbx
+	pushq %rdx
+	popq %rdi
+	call println_int
+	pushq $2
+	pushq $1
+	movq $0, %rdx
+	popq %rbx
+	popq %rax
+	idivq %rbx
+	pushq %rdx
+	popq %rdi
+	call println_int
+	pushq $2
+	pushq $2
+	movq $0, %rdx
+	popq %rbx
+	popq %rax
+	idivq %rbx
+	pushq %rdx
+	popq %rdi
+	call println_int
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp

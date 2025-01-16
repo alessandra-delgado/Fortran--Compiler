@@ -10,7 +10,7 @@
 %token SET, LET, IN, PRINT, PRINTLN
 %token EOF
 %token LP RP
-%token PLUS MINUS TIMES DIV
+%token PLUS MINUS TIMES DIV MOD
 %token ASSIGN
 %token IF, THEN, ELSE, END
 %token EQ, GE, GT, LE, LT, NE
@@ -20,7 +20,7 @@
 
 %nonassoc IN
 %left PLUS MINUS
-%left TIMES DIV
+%left TIMES DIV MOD
 %left NOT OR AND EQ GE GT LE LT NE
 %nonassoc uminus
 
@@ -66,6 +66,7 @@ expr:
 | MINUS { Sub }
 | TIMES { Mul }
 | DIV   { Div }
+| MOD   { Mod }
 | EQ {Eq}
 | NE { Ne }
 | GT {Gt}

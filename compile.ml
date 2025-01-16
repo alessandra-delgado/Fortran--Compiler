@@ -44,7 +44,16 @@ let compile_expr e =
         let _ = Hashtbl.find genv x in
         pushq (lab x)
       end 
-        
+    
+      (*
+    | Binop (Div|Mod as o, e1, e2) ->
+      let register = match o with
+      | Div -> nop
+      | Mod -> nop
+      | _ -> failwith "Not implemented"
+    in*)
+
+    
     | Binop (Div, e1, e2)->
       comprec env next e1 ++
       comprec env next e2 ++
@@ -53,6 +62,15 @@ let compile_expr e =
       popq rax ++
       idivq (reg rbx) ++
       pushq (reg rax)
+
+    | Binop (Mod, e1, e2) ->
+      comprec env next e1 ++
+      comprec env next e2 ++
+      movq (imm 0) (reg rdx) ++
+      popq rbx ++
+      popq rax ++
+      idivq (reg rbx) ++
+      pushq (reg rdx)
 
     | Binop (Add|Sub|Mul as o, e1, e2)->
       let op = match o with
