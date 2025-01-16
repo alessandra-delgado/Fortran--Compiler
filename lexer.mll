@@ -9,7 +9,7 @@
   exception Lexing_error of char
 
   let kwd_tbl = ["let",LET; "in",IN; "set",SET; "print",PRINT; "println", PRINTLN; 
-                 "if", IF; "then", THEN; "else", ELSE; "end", END]
+                 "if", IF; "then", THEN; "else", ELSE; "end", END; "or", OR; "and", AND; "xor", XOR; "mod", MOD]
   let id_or_kwd s = try List.assoc s kwd_tbl with _ -> IDENT s
 
 }
@@ -37,7 +37,9 @@ rule token = parse
   | "<="    { LE }
   | '<'     { LT }
   | "!="    { NE }
-  (*------------------ *)
+  (* boolean ---------- *)
+  | "!"    { NOT }
+  (* ------------------ *)
   | '('     { LP }
   | ')'     { RP }
   | integer as s { CST (int_of_string s) }

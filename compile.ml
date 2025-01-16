@@ -11,6 +11,7 @@ exception VarUndef of string
 (* Tamanho em byte da frame (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 let lif = ref 0
+let lbool = ref 0
 let lloop = ref 0
 let lfun = ref 0
 
@@ -43,15 +44,21 @@ let compile_expr e =
         let _ = Hashtbl.find genv x in
         pushq (lab x)
       end 
-        
-    | Binop (Div, e1, e2)->
-      comprec env next e1 ++
-      comprec env next e2 ++
-      movq (imm 0) (reg rdx) ++
-      popq rbx ++
-      popq rax ++
-      idivq (reg rbx) ++
-      pushq (reg rax)
+      
+    | Binop (Div|Mod as o, e1, e2) ->
+      let register = match o with
+      | Div -> rax
+      | Mod -> rdx
+      | _ -> failwith "Not implemented"
+    in
+    comprec env next e1 ++
+    comprec env next e2 ++
+    movq (imm 0) (reg rdx) ++
+    popq rbx ++
+    popq rax ++
+    idivq (reg rbx) ++
+    pushq (reg register)
+
     | Binop (Add|Sub|Mul as o, e1, e2)->
       let op = match o with
        | Add -> addq
@@ -68,10 +75,10 @@ let compile_expr e =
       op (reg rax) (reg rbx) ++
       pushq (reg rbx)
 
-    | Binop (Eq|Ne|Ge|Gt|Le|Lt as o, e1, e2) -> 
+    | Binop (Eq|Ne|Ge|Gt|Le|Lt|Xor as o, e1, e2) -> 
       let set = match o with
       | Eq -> sete
-      | Ne -> setne
+      | Ne|Xor -> setne
       | Ge -> setge
       | Gt -> setg
       | Le -> setle
@@ -87,7 +94,41 @@ let compile_expr e =
     set (reg al) ++
     movzbq (reg al) rax ++
     pushq (reg rax)
-      
+
+    | Binop(Or|And as o, e1, e2) ->
+      let jump, value = match o with 
+      | Or -> je, 1
+      | And -> jne, 0
+      | _ -> failwith "Not implemented"
+    in
+
+    lbool := !lbool + 1;
+    let lbool = !lbool in
+    comprec env next e1 ++
+    popq rax ++
+    cmpq (imm 0) (reg rax) ++
+    jump (Printf.sprintf ".bool_condition%d" lbool)++
+    pushq (imm value) ++
+    jmp (Printf.sprintf ".bool_end%d" lbool) ++
+
+    label (Printf.sprintf ".bool_condition%d" lbool) ++
+      comprec env next e2 ++
+          
+    label (Printf.sprintf ".bool_end%d" lbool)
+
+    | Unop(Not as o, e) ->
+      let set = match o with
+      | Not -> sete
+      | _ -> failwith "Not implemented"
+    in
+
+    comprec env next e ++
+    popq rax ++
+    cmpq (imm 0) (reg rax) ++
+    set (reg al) ++
+    movzbq (reg al) rax ++
+    pushq (reg rax)
+
     | Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;
 

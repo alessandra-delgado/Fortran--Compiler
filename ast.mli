@@ -14,5 +14,7 @@ and expr =
   | Var of string
   | Binop of binop * expr * expr
   | Letin of string * expr * expr
+  | Unop of unop * expr
 
-and binop = Add | Sub | Mul | Div | Eq | Ge | Gt | Le | Lt | Ne
+and binop = Add | Sub | Mul | Div | Mod | Eq | Ge | Gt | Le | Lt | Ne | Or | And | Xor
+and unop = Not
