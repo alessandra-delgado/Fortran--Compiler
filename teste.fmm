@@ -45,6 +45,7 @@ println(11111111)
 
 
 println(10 mod 5)
+println(10 / 2)
 println(5 mod 3)
 println(2 mod 1)
 println(2 mod 2)

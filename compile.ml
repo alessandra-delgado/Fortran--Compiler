@@ -45,32 +45,20 @@ let compile_expr e =
         pushq (lab x)
       end 
     
-      (*
+      
     | Binop (Div|Mod as o, e1, e2) ->
       let register = match o with
-      | Div -> nop
-      | Mod -> nop
+      | Div -> rax
+      | Mod -> rdx
       | _ -> failwith "Not implemented"
-    in*)
-
-    
-    | Binop (Div, e1, e2)->
-      comprec env next e1 ++
-      comprec env next e2 ++
-      movq (imm 0) (reg rdx) ++
-      popq rbx ++
-      popq rax ++
-      idivq (reg rbx) ++
-      pushq (reg rax)
-
-    | Binop (Mod, e1, e2) ->
-      comprec env next e1 ++
-      comprec env next e2 ++
-      movq (imm 0) (reg rdx) ++
-      popq rbx ++
-      popq rax ++
-      idivq (reg rbx) ++
-      pushq (reg rdx)
+    in
+    comprec env next e1 ++
+    comprec env next e2 ++
+    movq (imm 0) (reg rdx) ++
+    popq rbx ++
+    popq rax ++
+    idivq (reg rbx) ++
+    pushq (reg register)
 
     | Binop (Add|Sub|Mul as o, e1, e2)->
       let op = match o with
