@@ -255,6 +255,78 @@ main:
 	popq %rdi
 	call println_int
 .if_end11:
+	pushq $1
+	popq %rax
+	cmpq $0, %rax
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rdi
+	call println_int
+	pushq $0
+	popq %rax
+	cmpq $0, %rax
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rdi
+	call println_int
+	pushq $0
+	popq %rax
+	cmpq $0, %rax
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .if_end12
+.if_true12:
+	pushq $3
+	popq %rdi
+	call println_int
+.if_end12:
+	pushq $0
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .if_end13
+.if_true13:
+	pushq $4
+	popq %rdi
+	call println_int
+.if_end13:
+	pushq $0
+	popq %rax
+	cmpq $0, %rax
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	pushq $0
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .if_end14
+.if_true14:
+	pushq $4
+	popq %rdi
+	call println_int
+.if_end14:
 	pushq $11111111
 	popq %rdi
 	call println_int

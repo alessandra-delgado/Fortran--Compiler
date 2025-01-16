@@ -110,6 +110,20 @@ let compile_expr e =
       comprec env next e2 ++
           
     label (Printf.sprintf ".bool_end%d" lbool)
+
+    | Unop(Not as o, e) ->
+      let set = match o with
+      | Not -> sete
+      | _ -> failwith "Not implemented"
+    in
+
+    comprec env next e ++
+    popq rax ++
+    cmpq (imm 0) (reg rax) ++
+    set (reg al) ++
+    movzbq (reg al) rax ++
+    pushq (reg rax)
+
     
       
     | Letin (x, e1, e2) ->

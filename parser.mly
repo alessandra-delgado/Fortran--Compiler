@@ -14,14 +14,14 @@
 %token ASSIGN
 %token IF, THEN, ELSE, END
 %token EQ, GE, GT, LE, LT, NE
-%token AND, OR
+%token AND, OR, NOT
 
 /* Definição das prioridades e associatividades dos tokens */
 
 %nonassoc IN
 %left PLUS MINUS
 %left TIMES DIV
-%left OR AND EQ GE GT LE LT NE
+%left NOT OR AND EQ GE GT LE LT NE
 %nonassoc uminus
 
 /* Ponto de entrada da gramática */
@@ -57,6 +57,7 @@ expr:
 | LET id = IDENT ASSIGN e1 = expr IN e2 = expr
                                     { Letin (id, e1, e2) }
 | LP e = expr RP                    { e }
+| o = uop e = expr                   { Unop (o, e)}
 
 ;
 
@@ -75,5 +76,8 @@ expr:
 | AND {And}
 ;
 
+%inline uop:
+| NOT {Not}
+;
 
 

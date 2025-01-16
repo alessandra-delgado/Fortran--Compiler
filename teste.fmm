@@ -35,4 +35,10 @@ if 1 == 1 then println(2) else println(0) end if
 if 0 == 0 and 0 == 0  then println(2) else println(0) end if
 if 1 == 0 or 0 == 0 then println(2) else println(0) end if
 if 1 and 0 then println(2) else println(0) end if
+
+println(!1)
+println(!0)
+if !0 then println(3) end if
+if !(0 == 0) then println(4) end if
+if !0 == 0 then println(4) end if
 println(11111111)
