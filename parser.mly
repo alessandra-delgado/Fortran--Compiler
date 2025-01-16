@@ -14,14 +14,14 @@
 %token ASSIGN
 %token IF, THEN, ELSE, END
 %token EQ, GE, GT, LE, LT, NE
-%token AND, OR, NOT
+%token AND, OR, XOR, NOT
 
 /* Definição das prioridades e associatividades dos tokens */
 
 %nonassoc IN
 %left PLUS MINUS
 %left TIMES DIV MOD
-%left NOT OR AND EQ GE GT LE LT NE
+%left NOT OR AND XOR EQ GE GT LE LT NE
 %nonassoc uminus
 
 /* Ponto de entrada da gramática */
@@ -75,6 +75,7 @@ expr:
 | LE {Le}
 | OR {Or}
 | AND {And}
+| XOR {Xor}
 ;
 
 %inline uop:

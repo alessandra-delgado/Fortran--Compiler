@@ -44,7 +44,6 @@ let compile_expr e =
         let _ = Hashtbl.find genv x in
         pushq (lab x)
       end 
-    
       
     | Binop (Div|Mod as o, e1, e2) ->
       let register = match o with
@@ -76,10 +75,10 @@ let compile_expr e =
       op (reg rax) (reg rbx) ++
       pushq (reg rbx)
 
-    | Binop (Eq|Ne|Ge|Gt|Le|Lt as o, e1, e2) -> 
+    | Binop (Eq|Ne|Ge|Gt|Le|Lt|Xor as o, e1, e2) -> 
       let set = match o with
       | Eq -> sete
-      | Ne -> setne
+      | Ne|Xor -> setne
       | Ge -> setge
       | Gt -> setg
       | Le -> setle
@@ -95,7 +94,7 @@ let compile_expr e =
     set (reg al) ++
     movzbq (reg al) rax ++
     pushq (reg rax)
-
+    
     | Binop(Or|And as o, e1, e2) ->
       let jump, value = match o with 
       | Or -> je, 1
@@ -116,6 +115,7 @@ let compile_expr e =
       comprec env next e2 ++
           
     label (Printf.sprintf ".bool_end%d" lbool)
+
 
     | Unop(Not as o, e) ->
       let set = match o with

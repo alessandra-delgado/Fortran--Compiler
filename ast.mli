@@ -16,5 +16,5 @@ and expr =
   | Letin of string * expr * expr
   | Unop of unop * expr
 
-and binop = Add | Sub | Mul | Div | Mod | Eq | Ge | Gt | Le | Lt | Ne | Or | And
+and binop = Add | Sub | Mul | Div | Mod | Eq | Ge | Gt | Le | Lt | Ne | Or | And | Xor
 and unop = Not
