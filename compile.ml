@@ -94,7 +94,7 @@ let compile_expr e =
     set (reg al) ++
     movzbq (reg al) rax ++
     pushq (reg rax)
-    
+
     | Binop(Or|And as o, e1, e2) ->
       let jump, value = match o with 
       | Or -> je, 1
@@ -116,7 +116,6 @@ let compile_expr e =
           
     label (Printf.sprintf ".bool_end%d" lbool)
 
-
     | Unop(Not as o, e) ->
       let set = match o with
       | Not -> sete
@@ -130,8 +129,6 @@ let compile_expr e =
     movzbq (reg al) rax ++
     pushq (reg rax)
 
-    
-      
     | Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;
 
