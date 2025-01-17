@@ -142,7 +142,7 @@ let compile_expr e =
   comprec StrMap.empty 0 e
 
 (* Compilação de uma instrução *)
-let rec compile_instr = function
+let rec compile_instr ?(c_loop = !lloop) inst = match inst with
   | Set (x, e) ->
     Hashtbl.replace genv x ();
     compile_expr e ++
@@ -192,7 +192,47 @@ let rec compile_instr = function
         let code = List.map compile_instr i in
         let code = List.fold_left (++) nop code in
         code ++
-    label (Printf.sprintf ".if_end%d" lif) 
+    label (Printf.sprintf ".if_end%d" lif)
+
+  | Control (c) ->
+    let ctrl = match c with
+    | Exit -> jmp (Printf.sprintf ".do_exit%d" c_loop)
+    | Continue -> jmp (Printf.sprintf ".do_begin%d" c_loop)
+    | _ -> failwith "Not implemented"
+
+  | Do (i) ->
+    lloop := !lloop + 1;
+    let lloop = !lloop in
+
+    label (Printf.sprintf ".do_begin%d" lloop) ++
+      let code = List.map compile_instr i in
+      let code = List.fold_left (++) nop code in
+      code ++
+      jmp (Printf.sprintf ".do_begin%d" lloop) ++
+    label (Printf.sprintf ".do_exit%d" lloop)
+    
+  | Dowhile (e, i) ->
+    lloop := !lloop + 1;
+    let lloop = !lloop in 
+
+    comprec env next e ++
+    popq rax ++
+    cmpq (imm 0) (reg rax) ++
+    jne (Printf.sprintf ".do_exit%d" lloop) ++
+    label (Printf.sprintf ".do_begin%" lloop) ++
+      let code = List.map compile_instr i in
+      let code = List.fold_left (++) nop code in
+      code ++
+      jmp (Printf.sprintf ".do_begin%d" lloop) ++
+    label (Printf.sprintf ".do_exit%d" lloop)
+
+  in
+
+
+
+    
+
+    
 
 (* Compila o programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
