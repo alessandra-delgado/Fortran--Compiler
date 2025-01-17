@@ -119,7 +119,6 @@ let compile_expr e =
     | Unop(Not as o, e) ->
       let set = match o with
       | Not -> sete
-      | _ -> failwith "Not implemented"
     in
 
     comprec env next e ++
@@ -206,7 +205,7 @@ let rec compile_instr ?(c_loop = !lloop) inst =
       jmp (Printf.sprintf ".do_begin%d" lloop) ++
     label (Printf.sprintf ".do_exit%d" lloop)
     
-  | Dowhile (e, b) ->
+  | Whiledo (e, b) ->
     lloop := !lloop + 1;
     let lloop = !lloop in 
 
@@ -219,6 +218,19 @@ let rec compile_instr ?(c_loop = !lloop) inst =
       let code = List.fold_left (++) nop code in
       code ++
       jmp (Printf.sprintf ".do_begin%d" lloop) ++
+    label (Printf.sprintf ".do_exit%d" lloop)
+
+    | Dowhile(e, b) -> lloop := !lloop + 1;
+    let lloop = !lloop in 
+
+    label (Printf.sprintf ".do_begin%d" lloop) ++
+      let code = List.map compile_instr b in
+      let code = List.fold_left (++) nop code in
+      code ++
+      compile_expr e ++
+      popq rax ++
+      cmpq (imm 0) (reg rax) ++
+      jne (Printf.sprintf ".do_begin%d" lloop) ++
     label (Printf.sprintf ".do_exit%d" lloop)
 
     | Control (c) -> match c with

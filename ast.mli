@@ -8,9 +8,10 @@ and stmt =
   | Print of expr
   | Ifelse of expr * stmt list * stmt list
   | If of expr * stmt list
-  | Do of stmt list
-  | Dowhile of expr * stmt list
   | Control of ctrl
+  | Do of stmt list
+  | Whiledo of expr * stmt list
+  | Dowhile of expr * stmt list
   (* todo: for*)
 
 and expr =

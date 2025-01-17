@@ -35,13 +35,21 @@ main:
 	call println_int
 	jmp .do_begin1
 .do_exit1:
-	pushq $11111111
-	popq %rdi
-	call println_int
 	pushq $0
 	popq %rax
 	movq %rax, x
 .do_begin2:
+	pushq x
+	pushq $7
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	setl %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .do_exit2
 	pushq x
 	pushq $1
 	popq %rax
@@ -53,17 +61,7 @@ main:
 	pushq x
 	popq %rdi
 	call println_int
-	pushq x
-	pushq $7
-	popq %rax
-	popq %rbx
-	cmpq %rax, %rbx
-	setl %al
-	movzbq %al, %rax
-	pushq %rax
-	popq %rax
-	cmpq $0, %rax
-	jne .do_begin2
+	jmp .do_begin2
 .do_exit2:
 	movq $0, %rax
 	movq %rbp, %rsp
