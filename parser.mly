@@ -51,7 +51,7 @@ stmt:
 | IF e = expr THEN block = list(stmt) END IF                                  { If (e, block) }
 | DO block = list(stmt) END DO                                                { Do (block) }
 | DO WHILE LP e = expr RP block = list(stmt) END DO                           { Dowhile (e, block) }
-| c = ctrl                                                                    { Control (c) }
+| c = ctrl                                                                    { Control c }
 ;
 
 expr:

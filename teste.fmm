@@ -63,3 +63,27 @@ println(1 < 0 xor (1 == 2))
 println(1 < 0 xor (1 == 1))
 println(1 > 0 xor (1 == 2))
 println(1 > 0 xor (1 == 1))
+
+println(11111111)
+set x = 0
+do while (x < 10)
+    set x = x + 1
+    println(x)
+    if x == 5 then exit end if
+end do
+
+println(11111111)
+set x = 0
+do while (x < 10)
+    set x = x + 1
+    println(x)
+    if x == 8 then exit end if
+end do
+
+println(11111111)
+set x = 0
+do while (x < 10)
+    set x = x + 1
+    if x == 9 then continue end if
+    println(x)
+end do

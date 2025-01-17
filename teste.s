@@ -549,6 +549,141 @@ main:
 	pushq %rax
 	popq %rdi
 	call println_int
+	pushq $11111111
+	popq %rdi
+	call println_int
+	pushq $0
+	popq %rax
+	movq %rax, x
+.do_begin1:
+	pushq x
+	pushq $10
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	setl %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .do_exit1
+	pushq x
+	pushq $1
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	movq %rax, x
+	pushq x
+	popq %rdi
+	call println_int
+	pushq x
+	pushq $5
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .if_end16
+.if_true16:
+	jmp .do_exit1
+.if_end16:
+	jmp .do_begin1
+.do_exit1:
+	pushq $11111111
+	popq %rdi
+	call println_int
+	pushq $0
+	popq %rax
+	movq %rax, x
+.do_begin2:
+	pushq x
+	pushq $10
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	setl %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .do_exit2
+	pushq x
+	pushq $1
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	movq %rax, x
+	pushq x
+	popq %rdi
+	call println_int
+	pushq x
+	pushq $8
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .if_end17
+.if_true17:
+	jmp .do_exit2
+.if_end17:
+	jmp .do_begin2
+.do_exit2:
+	pushq $11111111
+	popq %rdi
+	call println_int
+	pushq $0
+	popq %rax
+	movq %rax, x
+.do_begin3:
+	pushq x
+	pushq $10
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	setl %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .do_exit3
+	pushq x
+	pushq $1
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	movq %rax, x
+	pushq x
+	pushq $9
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	sete %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .if_end18
+.if_true18:
+	jmp .do_begin3
+.if_end18:
+	pushq x
+	popq %rdi
+	call println_int
+	jmp .do_begin3
+.do_exit3:
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp
