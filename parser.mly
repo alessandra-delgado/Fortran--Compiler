@@ -47,12 +47,16 @@ stmt:
 | SET id = IDENT ASSIGN e = expr                                              { Set (id, e) }
 | PRINT e = expr                                                              { Print e }
 | PRINTLN LP e = expr RP                                                      { Println e }
-| IF e = expr THEN block1 = list(stmt) ELSE block2 = list(stmt) END IF        { Ifelse (e, block1, block2) }
-| IF e = expr THEN block = list(stmt) END IF                                  { If (e, block) }
+| IF e = expr THEN block = list(stmt) ei = els END IF                         { If (e, block, ei) }
 | DO block = list(stmt) END DO                                                { Do (block) }
 | DO WHILE LP e = expr RP block = list(stmt) END DO                           { Whiledo (e, block) }
 | DO block = list(stmt) WHILE LP e = expr RP END DO                           { Dowhile (e, block) }
 | c = ctrl                                                                    { Control c }
+;
+
+els:
+| ELSE block = list(stmt)                                                     { block }
+|                                                                             { [] }
 ;
 
 expr:

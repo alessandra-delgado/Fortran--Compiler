@@ -6,8 +6,7 @@ and stmt =
   | Set of string * expr
   | Println of expr
   | Print of expr
-  | Ifelse of expr * stmt list * stmt list
-  | If of expr * stmt list
+  | If of expr * stmt list * stmt list
   | Control of ctrl
   | Do of stmt list
   | Whiledo of expr * stmt list
