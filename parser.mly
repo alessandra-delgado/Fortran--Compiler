@@ -7,7 +7,7 @@
 
 %token <int> CST
 %token <string> IDENT
-%token SET, LET, IN, PRINT, PRINTLN
+%token SET, LET, IN, PRINT, PRINTLN, READ
 %token EOF
 %token LP RP END
 %token PLUS MINUS TIMES DIV MOD
@@ -45,8 +45,9 @@ stmts:
 
 stmt:
 | SET id = IDENT ASSIGN e = expr                                              { Set (id, e) }
-| PRINT e = expr                                                              { Print e }
+| PRINT LP e = expr RP                                                        { Print e }
 | PRINTLN LP e = expr RP                                                      { Println e }
+| READ LP id = IDENT RP                                                       { Read id }
 | IF e = expr THEN block = list(stmt) ei = els END IF                         { If (e, block, ei) }
 | DO block = list(stmt) END DO                                                { Do (block) }
 | DO WHILE LP e = expr RP block = list(stmt) END DO                           { Whiledo (e, block) }

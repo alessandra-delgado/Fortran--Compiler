@@ -119,7 +119,7 @@ let compile_expr e =
   in
   comprec StrMap.empty 0 e
 
-(* Compilação de uma instrução *)
+(* Instruction compiling *)
 let rec compile_instr ?(c_loop = !lloop) inst =
   match inst with
   | Set (x, e) ->
@@ -137,36 +137,46 @@ let rec compile_instr ?(c_loop = !lloop) inst =
       ++
       (* movq (imm i) (reg rdi) *)
       call "print_int"
+  | Read (x) ->
+    (* todo: use stack *)
+      Hashtbl.replace genv x ();
+      leaq (lab x) rsi ++
+      call "read_int"
+
   | If (e, i1, i2) ->
       lif := !lif + 1;
       let lif = !lif in
       let else_block =
         match i2 with
         | [] -> nop
-        | _ ->
+        | _ -> (*if the else statement is specified, compile the correspondent code*)
             let code = List.map compile_instr i2 in
             let code = List.fold_left ( ++ ) nop code in
             code ++ jmp (Printf.sprintf ".if_end%d" lif)
       in
 
+      (* main condition *)
       compile_expr e
       ++
-      (*relational expr*)
+      (*relational expr *)
       popq rax
       ++ cmpq (imm 0) (reg rax)
+      (* if result is not false, jump to true side *)
       ++ jne (Printf.sprintf ".if_true%d" lif)
+      (* otherwise, execute the false side *)
       ++ else_block
-      ++ label (Printf.sprintf ".if_true%d" lif)
-      ++
+
+      ++ label (Printf.sprintf ".if_true%d" lif) ++
       let code = List.map compile_instr i1 in
       let code = List.fold_left ( ++ ) nop code in
       code ++ label (Printf.sprintf ".if_end%d" lif)
+
   | Do b ->
       lloop := !lloop + 1;
       let lloop = !lloop in
 
-      label (Printf.sprintf ".do_begin%d" lloop)
-      ++
+      label (Printf.sprintf ".do_begin%d" lloop) ++
+      (* executes code block infinitely *)
       let code = List.map compile_instr b in
       let code = List.fold_left ( ++ ) nop code in
       code
@@ -177,8 +187,10 @@ let rec compile_instr ?(c_loop = !lloop) inst =
       let lloop = !lloop in
 
       label (Printf.sprintf ".do_begin%d" lloop)
+      (* compile stop condition *)
       ++ compile_expr e ++ popq rax
       ++ cmpq (imm 0) (reg rax)
+      (* if its result's false, exit the loop *)
       ++ je (Printf.sprintf ".do_exit%d" lloop)
       ++
       let code = List.map compile_instr b in
@@ -190,18 +202,21 @@ let rec compile_instr ?(c_loop = !lloop) inst =
       lloop := !lloop + 1;
       let lloop = !lloop in
 
-      label (Printf.sprintf ".do_begin%d" lloop)
-      ++
+      label (Printf.sprintf ".do_begin%d" lloop) ++
+      (* executes code block at least once *)
       let code = List.map compile_instr b in
       let code = List.fold_left ( ++ ) nop code in
       code ++ compile_expr e ++ popq rax
       ++ cmpq (imm 0) (reg rax)
+      (* verifies condition state after executing code block, exits if false *)
       ++ jne (Printf.sprintf ".do_begin%d" lloop)
       ++ label (Printf.sprintf ".do_exit%d" lloop)
   | Control c -> (
       match c with
       | Exit -> jmp (Printf.sprintf ".do_exit%d" c_loop)
       | Continue -> jmp (Printf.sprintf ".do_begin%d" c_loop))
+
+
 
 (* Compila o programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
@@ -218,17 +233,27 @@ let compile_program p ofile =
         ++ code
         ++ movq (imm 0) (reg rax)
         ++ movq (reg rbp) (reg rsp)
-        ++ popq rbp ++ ret ++ label "println_int"
+        ++ popq rbp ++ ret ++
+        
+        label "println_int"
         ++ pushq (reg rbp)
         ++ movq (reg rdi) (reg rsi)
         ++ leaq (lab ".Sprintln_int") rdi
         ++ movq (imm 0) (reg rax)
-        ++ call "printf" ++ popq rbp ++ ret ++ label "print_int"
+        ++ call "printf" ++ popq rbp ++ ret ++ 
+        
+        label "print_int"
         ++ pushq (reg rbp)
         ++ movq (reg rdi) (reg rsi)
         ++ leaq (lab ".Sprint_int") rdi
         ++ movq (imm 0) (reg rax)
-        ++ call "printf" ++ popq rbp ++ ret;
+        ++ call "printf" ++ popq rbp ++ ret ++
+
+        label "read_int"
+        ++ pushq (reg rbp)
+        ++ leaq (lab ".Sprint_int") rdi
+        ++ movq (imm 0) (reg rax)
+        ++ call "scanf" ++ popq rbp ++ ret;
       data =
         Hashtbl.fold
           (fun x _ l -> label x ++ dquad [ 1 ] ++ l)

@@ -1,17 +1,4 @@
-!! g 
-
-
-
-
-!*
-
-
-
-
-
-
-
-
-*!
-
-println(5)
+set x = 0
+println(x)
+read(x)
+println(x)

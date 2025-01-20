@@ -13,7 +13,8 @@
                  "if", IF; "then", THEN; "else", ELSE; "end", END;
                  "not", NOT; "or", OR; "and", AND; "xor", XOR; "mod", MOD;
                  "do", DO; "while", WHILE;
-                 "exit", EXIT; "continue", CONTINUE]
+                 "exit", EXIT; "continue", CONTINUE;
+                 "read", READ]
   let id_or_kwd s = try List.assoc s kwd_tbl with _ -> IDENT s
 
 }
@@ -23,6 +24,7 @@ let digit = ['0'-'9']
 let ident = letter (letter | digit)*
 let integer = ['0'-'9']+
 let space = [' ' '\t']
+
 
 rule token = parse
   | '\n'    { new_line lexbuf; token lexbuf }
