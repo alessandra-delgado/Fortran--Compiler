@@ -1,14 +1,17 @@
-println(11111111)
-set x = 0
-do while (x < 7)
-    set x = x + 1
-    println(x)
-end do
+!! g 
 
-println(11111111)
-set x = 0 
-do
-    set x = x + 1
-    println(x)
-while (x < 7)
-end do
+
+
+
+!*
+
+
+
+
+
+
+
+
+*!
+
+println(5)

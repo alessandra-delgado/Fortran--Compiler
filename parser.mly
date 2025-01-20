@@ -18,6 +18,7 @@
 %token DO, WHILE
 %token EXIT, CONTINUE
 
+
 /* Definição das prioridades e associatividades dos tokens */
 
 %nonassoc IN
@@ -35,12 +36,11 @@
 %%
 
 prog:
-| p = stmts EOF                                                               { List.rev p }
+| p = list (stmts) EOF                                                               { p }
 ;
 
 stmts:
-| i = stmt                                                                    { [i] }
-| l = stmts i = stmt                                                          { i :: l }
+| i = stmt                                                                    { i }
 ;
 
 stmt:

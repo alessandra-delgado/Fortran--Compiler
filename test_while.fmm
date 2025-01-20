@@ -97,3 +97,18 @@ do
     println(x)
     if x >= 23 then exit end if
 end do
+
+println(11111111)
+set x = 0
+do while (x < 7)
+    set x = x + 1
+    println(x)
+end do
+
+println(11111111)
+set x = 0 
+do
+    set x = x + 1
+    println(x)
+while (x < 7)
+end do
