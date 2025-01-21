@@ -12,6 +12,7 @@ and stmt =
   | Do of stmt list
   | Whiledo of expr * stmt list
   | Dowhile of expr * stmt list
+  | For of string * expr * expr * stmt list
   (* todo: for*)
 
 and expr =

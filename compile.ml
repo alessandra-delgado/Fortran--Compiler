@@ -211,6 +211,23 @@ let rec compile_instr ?(c_loop = !lloop) inst =
       (* verifies condition state after executing code block, exits if false *)
       ++ jne (Printf.sprintf ".do_begin%d" lloop)
       ++ label (Printf.sprintf ".do_exit%d" lloop)
+
+  | For (i, e, c, block) ->
+    lloop := !lloop + 1;
+    let lloop = !lloop in 
+    Hashtbl.replace genv i ();
+    compile_expr e ++ popq rax ++ movq (reg rax) (lab i) ++
+
+    label (Printf.sprintf ".do_begin%d" lloop) ++
+    compile_expr c ++ 
+    popq rax ++ cmpq (imm 0) (reg rax) ++
+    je (Printf.sprintf ".do_exit%d" lloop) ++
+    let code = List.map compile_instr block in
+      let code = List.fold_left ( ++ ) nop code in
+      code
+      ++ jmp (Printf.sprintf ".do_begin%d" lloop)
+    ++ label (Printf.sprintf ".do_exit%d" lloop)
+
   | Control c -> (
       match c with
       | Exit -> jmp (Printf.sprintf ".do_exit%d" c_loop)

@@ -12,7 +12,7 @@
   let kwd_tbl = ["let",LET; "in",IN; "set",SET; "print",PRINT; "println", PRINTLN; 
                  "if", IF; "then", THEN; "else", ELSE; "end", END;
                  "not", NOT; "or", OR; "and", AND; "xor", XOR; "mod", MOD;
-                 "do", DO; "while", WHILE;
+                 "do", DO; "while", WHILE; "for", FOR;
                  "exit", EXIT; "continue", CONTINUE;
                  "read", READ]
   let id_or_kwd s = try List.assoc s kwd_tbl with _ -> IDENT s
@@ -47,6 +47,8 @@ rule token = parse
   (* ------------------ *)
   | '('     { LP }
   | ')'     { RP }
+  | ','     { CM }
+  | ':'     { CL }
   | integer as s { CST (int_of_string s) }
   | eof     { EOF }
   | _ as c  { raise (Lexing_error c) }

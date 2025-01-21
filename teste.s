@@ -6,15 +6,32 @@ main:
 	subq $0, %rsp
 	pushq $0
 	popq %rax
-	movq %rax, x
-	pushq x
+	movq %rax, i
+.do_begin1:
+	pushq i
+	pushq $10
+	popq %rax
+	popq %rbx
+	cmpq %rax, %rbx
+	setl %al
+	movzbq %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .do_exit1
+	pushq i
 	popq %rdi
 	call println_int
-	leaq x, %rsi
-	call read_int
-	pushq x
-	popq %rdi
-	call println_int
+	pushq i
+	pushq $1
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	movq %rax, i
+	jmp .do_begin1
+.do_exit1:
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp
@@ -43,7 +60,7 @@ read_int:
 	popq %rbp
 	ret
 	.data
-x:
+i:
 	.quad 1
 .Sprintln_int:
 	.string "%d\n"

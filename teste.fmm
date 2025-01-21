@@ -1,4 +1,10 @@
-set x = 0
-println(x)
+!* set x = 0
 read(x)
-println(x)
+
+
+println(let u = x in u + 1) *!
+
+for i = 0, i < 10:
+    println(i)
+    set i = i + 1
+end for

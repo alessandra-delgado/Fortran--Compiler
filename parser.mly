@@ -9,13 +9,13 @@
 %token <string> IDENT
 %token SET, LET, IN, PRINT, PRINTLN, READ
 %token EOF
-%token LP RP END
+%token LP RP CM CL END
 %token PLUS MINUS TIMES DIV MOD
 %token ASSIGN
 %token IF, THEN, ELSE
 %token EQ, GE, GT, LE, LT, NE
 %token AND, OR, XOR, NOT
-%token DO, WHILE
+%token DO, WHILE, FOR
 %token EXIT, CONTINUE
 
 
@@ -52,6 +52,7 @@ stmt:
 | DO block = list(stmt) END DO                                                { Do (block) }
 | DO WHILE LP e = expr RP block = list(stmt) END DO                           { Whiledo (e, block) }
 | DO block = list(stmt) WHILE LP e = expr RP END DO                           { Dowhile (e, block) }
+| FOR i = IDENT ASSIGN e = expr CM c = expr CL block = list(stmt) END FOR     { For (i, e, c, block) }
 | c = ctrl                                                                    { Control c }
 ;
 
