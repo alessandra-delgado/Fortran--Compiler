@@ -4,12 +4,14 @@ main:
 	pushq %rbp
 	movq %rsp, %rbp
 	subq $0, %rsp
+	leaq x, %rsi
+	call read_int
 	pushq $0
 	popq %rax
 	movq %rax, i
 .do_begin1:
 	pushq i
-	pushq $10
+	pushq x
 	popq %rax
 	popq %rbx
 	cmpq %rax, %rbx
@@ -61,6 +63,8 @@ read_int:
 	ret
 	.data
 i:
+	.quad 1
+x:
 	.quad 1
 .Sprintln_int:
 	.string "%d\n"

@@ -3,8 +3,9 @@ read(x)
 
 
 println(let u = x in u + 1) *!
+read(x)
 
-for i = 0, i < 10:
+for i = 0, i < x:
     println(i)
     set i = i + 1
 end for

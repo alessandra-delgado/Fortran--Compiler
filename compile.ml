@@ -275,8 +275,8 @@ let compile_program p ofile =
         Hashtbl.fold
           (fun x _ l -> label x ++ dquad [ 1 ] ++ l)
           genv
-          (label ".Sprintln_int" ++ string "%d\n" ++ label ".Sprint_int"
-         ++ string "%d");
+          (label ".Sprintln_int" ++ string "%ld\n" ++ label ".Sprint_int"
+         ++ string "%ld");
     }
   in
   let f = open_out ofile in
