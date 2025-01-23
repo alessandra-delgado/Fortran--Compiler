@@ -7,7 +7,7 @@
 
 %token <int> CST
 %token <string> IDENT
-%token SET, LET, IN, PRINT, PRINTLN, READ
+%token DECLARE, SET, LET, IN, PRINT, PRINTLN, READ
 %token EOF
 %token LP RP CM CL END
 %token PLUS MINUS TIMES DIV MOD
@@ -44,6 +44,7 @@ stmts:
 ;
 
 stmt:
+| DECLARE id = IDENT e = assign?                                              { Declare (id, e)}
 | SET id = IDENT ASSIGN e = expr                                              { Set (id, e) }
 | PRINT LP e = expr RP                                                        { Print e }
 | PRINTLN LP e = expr RP                                                      { Println e }
@@ -56,10 +57,15 @@ stmt:
 | c = ctrl                                                                    { Control c }
 ;
 
+assign:
+| ASSIGN e = expr                                                             { e }
+;
+
 els:
 | ELSE block = list(stmt)                                                     { block }
 |                                                                             { [] }
 ;
+
 
 expr:
 | c = CST                                                                     { Cst c }

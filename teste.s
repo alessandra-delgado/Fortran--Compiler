@@ -34,6 +34,21 @@ main:
 	movq %rax, i
 	jmp .do_begin1
 .do_exit1:
+	pushq r
+	popq %rdi
+	call println_int
+	pushq $98
+	popq %rax
+	movq %rax, r
+	pushq r
+	popq %rdi
+	call println_int
+	pushq $6
+	popq %rax
+	movq %rax, t
+	pushq t
+	popq %rdi
+	call println_int
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp
@@ -64,9 +79,13 @@ read_int:
 	.data
 i:
 	.quad 1
+r:
+	.quad 1
 x:
 	.quad 1
+t:
+	.quad 1
 .Sprintln_int:
-	.string "%d\n"
+	.string "%ld\n"
 .Sprint_int:
-	.string "%d"
+	.string "%ld"
