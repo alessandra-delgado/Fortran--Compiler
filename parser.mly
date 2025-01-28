@@ -36,11 +36,7 @@
 %%
 
 prog:
-| p = list (stmts) EOF                                                               { p }
-;
-
-stmts:
-| i = stmt                                                                    { i }
+| p = list (stmt) EOF                                                               { p }
 ;
 
 stmt:
@@ -50,11 +46,15 @@ stmt:
 | PRINTLN LP e = expr RP                                                      { Println e }
 | READ LP id = IDENT RP                                                       { Read id }
 | IF e = expr THEN block = list(stmt) ei = els END IF                         { If (e, block, ei) }
-| DO block = list(stmt) END DO                                                { Do (block) }
-| DO WHILE LP e = expr RP block = list(stmt) END DO                           { Whiledo (e, block) }
-| DO block = list(stmt) WHILE LP e = expr RP END DO                           { Dowhile (e, block) }
+| DO w = whilebody                                                            { w }
 | FOR i = IDENT ASSIGN e = expr CM c = expr CL block = list(stmt) END FOR     { For (i, e, c, block) }
 | c = ctrl                                                                    { Control c }
+;
+
+whilebody:
+| block = list(stmt) END DO                                                   { Do (block) }
+| LP e = expr RP block = list(stmt) END DO                                    { Whiledo(e, block) }
+| DO block = list(stmt) WHILE LP e = expr RP END DO                           { Dowhile(e, block) }
 ;
 
 assign:
@@ -66,7 +66,6 @@ els:
 |                                                                             { [] }
 ;
 
-
 expr:
 | c = CST                                                                     { Cst c }
 | id = IDENT                                                                  { Var id }
@@ -75,7 +74,6 @@ expr:
 | LET id = IDENT ASSIGN e1 = expr IN e2 = expr                                { Letin (id, e1, e2) }
 | LP e = expr RP                                                              { e }
 | o = uop e = expr                                                            { Unop (o, e) }
-
 ;
 
 %inline op:
