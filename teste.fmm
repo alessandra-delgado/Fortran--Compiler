@@ -9,3 +9,14 @@ for i = 0, i < x:
     println(i)
     set i = i + 1
 end for
+
+var r
+println(r)
+
+set r = 98
+
+println(r)
+
+
+set t = 6
+println(t)

@@ -3,6 +3,7 @@
 type program = stmt list
 
 and stmt =
+  | Declare of string * expr option
   | Set of string * expr
   | Println of expr
   | Print of expr

@@ -8,13 +8,13 @@
 
   exception Lexing_error of char
   exception Lexing_error_comment of string
-
-  let kwd_tbl = ["let",LET; "in",IN; "set",SET; "print",PRINT; "println", PRINTLN; 
+  
+  let kwd_tbl = ["var", DECLARE; "let", LET; "in", IN; "set", SET;
+                 "print", PRINT; "println", PRINTLN; "read", READ; 
                  "if", IF; "then", THEN; "else", ELSE; "end", END;
                  "not", NOT; "or", OR; "and", AND; "xor", XOR; "mod", MOD;
                  "do", DO; "while", WHILE; "for", FOR;
-                 "exit", EXIT; "continue", CONTINUE;
-                 "read", READ]
+                 "exit", EXIT; "continue", CONTINUE]
   let id_or_kwd s = try List.assoc s kwd_tbl with _ -> IDENT s
 
 }

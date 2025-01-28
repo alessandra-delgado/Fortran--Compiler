@@ -122,6 +122,13 @@ let compile_expr e =
 (* Instruction compiling *)
 let rec compile_instr ?(c_loop = !lloop) inst =
   match inst with
+  | Declare (x, e) -> 
+    Hashtbl.replace genv x ();
+     (match e with
+    | Some expr -> compile_expr expr ++ popq rax ++ movq (reg rax) (lab x)
+    | None -> nop)
+  
+      
   | Set (x, e) ->
       Hashtbl.replace genv x ();
       compile_expr e ++ popq rax ++ movq (reg rax) (lab x)
