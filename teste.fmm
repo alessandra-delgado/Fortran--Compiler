@@ -1,22 +1,15 @@
-!* set x = 0
-read(x)
+var x = 6
+println(x)
 
+var y = 8
+println(y)
 
-println(let u = x in u + 1) *!
-read(x)
+println(x)
 
-for i = 0, i < x:
-    println(i)
-    set i = i + 1
-end for
+set x = 19
+println(x)
 
-var r
-println(r)
+println(let y = 10 in y + 5 + x)
 
-set r = 98
-
-println(r)
-
-
-set t = 6
-println(t)
+println(y)
+println(x)

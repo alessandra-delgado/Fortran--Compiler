@@ -21,12 +21,12 @@ let (genv : (string, unit) Hashtbl.t) = Hashtbl.create 17
    (strings) cujo valor associado é a posição da variável relativamente
    a $fp/%rsb (em bytes)
 *)
-module StrMap = Map.Make (String)
+module StrMap = Hashtbl.Make (String)
 
 (* Compilação de uma expressão *)
-let compile_expr e =
+let compile_expr env e =
   (* Função recursiva local de compile_expr utilizada para gerar o código
-     máquina da árvore de sintaxe  abstracta associada a um valor de tipo
+     máquina da árvore de sintaxe abstracta associada a um valor de tipo
      Ast.expr ; na sequência da execução deste código, o valor deve estar
      no topo da pilha *)
   let rec comprec env next e =
@@ -34,7 +34,8 @@ let compile_expr e =
     | Cst i -> pushq (imm i)
     | Var x -> (
         try
-          let ofs = StrMap.find x env in
+          let ofs = List.filter (fun e -> StrMap.mem e x) env in
+          let ofs = StrMap.find (List.hd ofs) x in
           movq (ind ~ofs:(-ofs) rbp) (reg rax) ++ pushq (reg rax)
         with Not_found ->
           let _ = Hashtbl.find genv x in
@@ -113,138 +114,186 @@ let compile_expr e =
     | Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;
 
+        (* Create new environment *)
+        let t = (StrMap.create 8) in
+        StrMap.add t x next;
         comprec env next e1 ++ popq rax
         ++ movq (reg rax) (ind ~ofs:(-next) rbp)
-        ++ comprec (StrMap.add x next env) (next + 8) e2
+        ++ comprec (t :: env) (next + 8) e2
   in
-  comprec StrMap.empty 0 e
+  comprec env !frame_size e
 
 (* Instruction compiling *)
-let rec compile_instr ?(c_loop = !lloop) inst =
-  match inst with
-  | Declare (x, e) -> 
-    Hashtbl.replace genv x ();
-     (match e with
-    | Some expr -> compile_expr expr ++ popq rax ++ movq (reg rax) (lab x)
-    | None -> nop)
-  
-      
-  | Set (x, e) ->
-      Hashtbl.replace genv x ();
-      compile_expr e ++ popq rax ++ movq (reg rax) (lab x)
-  | Println e ->
-      (* Print( Var(x) )*)
-      compile_expr e ++ popq rdi
-      ++
-      (* movq (imm i) (reg rdi) *)
-      call "println_int"
-  | Print e ->
-      (* Print( Var(x) )*)
-      compile_expr e ++ popq rdi
-      ++
-      (* movq (imm i) (reg rdi) *)
-      call "print_int"
-  | Read (x) ->
-    (* todo: use stack *)
-      Hashtbl.replace genv x ();
-      leaq (lab x) rsi ++
-      call "read_int"
+let compile_instr env inst =
+  let rec comprec env inst=
+    match inst with
+    | Declare (x, e) ->
+        (* Increment frame size for storing variable address in stack*)
+        
+        (* 1 - Search if variable exists in the current environment. *)
+        (* Note: You can redeclare a variable, even if it is declared in surrounding environments,
+          but never if it's already declared in the current one. *)
+        let _ =
+          match env with
+          | hd :: _ -> (
+              try
+                let _ = StrMap.find hd x in
+                failwith (Printf.sprintf "Redefinition of variable '%s'" x)
+              with Not_found -> StrMap.add hd x !frame_size)
+          | [] -> failwith "No scope declared."
+        in
+        
+        (* 2 - Check if there is value to atribute to variable *)
+        let code = match e with
+        | Some expr ->
+            (* Compile expression using the new environment *)
+            compile_expr env expr
+            ++ popq rax
+            ++ movq (reg rax) (ind ~ofs:(-(!frame_size)) rbp)
+        | None ->
+            (*It is not required to atribute a value right away*)
+            nop
+        in
+          frame_size := 8 + !frame_size;
+          code
+    | Set (x, e) -> (
+        (* 1 - Search for variable in all active environments, prioritizing the nearest *)
+        try
+          let ofs = List.filter (fun e -> StrMap.mem e x) env in
+          let ofs = StrMap.find (List.hd ofs) x in
+          compile_expr env e ++
+          popq rax ++
+          movq (reg rax) (ind ~ofs:(-ofs) rbp)
+        with Not_found ->
+          failwith
+            (Printf.sprintf "Variable '%s' is not declared in the scope." x))
+    | Println e ->
+        (* Print( Var(x) )*)
+        compile_expr env e ++ popq rdi
+        ++
+        (* movq (imm i) (reg rdi) *)
+        call "println_int"
+    | Print e ->
+        (* Print( Var(x) )*)
+        compile_expr env e ++ popq rdi
+        ++
+        (* movq (imm i) (reg rdi) *)
+        call "print_int"
+    | Read x -> (
+        (* You can only replace a variable's value if it exists in the nearest scope. *)
+        (* 1 - Search *)
+        (* Map find function for all maps in env *)
+        try
+          let ofs = List.map (fun e -> StrMap.find e x) env in
+          let ofs = List.hd ofs in
+          leaq (ind ~ofs:(-ofs) rbp) rsi ++
+          call "read_int"
+        with Not_found ->
+          failwith
+            (Printf.sprintf "Variable '%s' is not declared in the scope." x))
+    (*
 
-  | If (e, i1, i2) ->
-      lif := !lif + 1;
-      let lif = !lif in
-      let else_block =
-        match i2 with
-        | [] -> nop
-        | _ -> (*if the else statement is specified, compile the correspondent code*)
-            let code = List.map compile_instr i2 in
-            let code = List.fold_left ( ++ ) nop code in
-            code ++ jmp (Printf.sprintf ".if_end%d" lif)
-      in
+        (* todo: fix everything below :'3 *)
+    | If (e, i1, i2) ->
+        lif := !lif + 1;
+        let lif = !lif in
+        let else_block =
+          match i2 with
+          | [] -> nop
+          | _ ->
+              (*if the else statement is specified, compile the correspondent code*)
+              let code = List.map (comprec env i2) in
+              let code = List.fold_left ( ++ ) nop code in
+              code ++ jmp (Printf.sprintf ".if_end%d" lif)
+        in
 
-      (* main condition *)
-      compile_expr e
-      ++
-      (*relational expr *)
-      popq rax
-      ++ cmpq (imm 0) (reg rax)
-      (* if result is not false, jump to true side *)
-      ++ jne (Printf.sprintf ".if_true%d" lif)
-      (* otherwise, execute the false side *)
-      ++ else_block
+        (* main condition *)
+        compile_expr env e
+        ++
+        (*relational expr *)
+        popq rax
+        ++ cmpq (imm 0) (reg rax)
+        (* if result is not false, jump to true side *)
+        ++ jne (Printf.sprintf ".if_true%d" lif)
+        (* otherwise, execute the false side *)
+        ++ else_block
+        ++ label (Printf.sprintf ".if_true%d" lif)
+        ++
+        let code = List.map (compile_instr env i1) in
+        let code = List.fold_left ( ++ ) nop code in
+        code ++ label (Printf.sprintf ".if_end%d" lif)
+    | Do b ->
+        lloop := !lloop + 1;
+        let lloop = !lloop in
 
-      ++ label (Printf.sprintf ".if_true%d" lif) ++
-      let code = List.map compile_instr i1 in
-      let code = List.fold_left ( ++ ) nop code in
-      code ++ label (Printf.sprintf ".if_end%d" lif)
+        label (Printf.sprintf ".do_begin%d" lloop)
+        ++
+        (* executes code block infinitely *)
+        let code = List.map compile_instr b in
+        let code = List.fold_left ( ++ ) nop code in
+        code
+        ++ jmp (Printf.sprintf ".do_begin%d" lloop)
+        ++ label (Printf.sprintf ".do_exit%d" lloop)
+    | Whiledo (e, b) ->
+        lloop := !lloop + 1;
+        let lloop = !lloop in
 
-  | Do b ->
-      lloop := !lloop + 1;
-      let lloop = !lloop in
+        label (Printf.sprintf ".do_begin%d" lloop)
+        (* compile stop condition *)
+        ++ compile_expr e
+        ++ popq rax
+        ++ cmpq (imm 0) (reg rax)
+        (* if its result's false, exit the loop *)
+        ++ je (Printf.sprintf ".do_exit%d" lloop)
+        ++
+        let code = List.map compile_instr b in
+        let code = List.fold_left ( ++ ) nop code in
+        code
+        ++ jmp (Printf.sprintf ".do_begin%d" lloop)
+        ++ label (Printf.sprintf ".do_exit%d" lloop)
+    | Dowhile (e, b) ->
+        lloop := !lloop + 1;
+        let lloop = !lloop in
 
-      label (Printf.sprintf ".do_begin%d" lloop) ++
-      (* executes code block infinitely *)
-      let code = List.map compile_instr b in
-      let code = List.fold_left ( ++ ) nop code in
-      code
-      ++ jmp (Printf.sprintf ".do_begin%d" lloop)
-      ++ label (Printf.sprintf ".do_exit%d" lloop)
-  | Whiledo (e, b) ->
-      lloop := !lloop + 1;
-      let lloop = !lloop in
+        label (Printf.sprintf ".do_begin%d" lloop)
+        ++
+        (* executes code block at least once *)
+        let code = List.map compile_instr b in
+        let code = List.fold_left ( ++ ) nop code in
+        code ++ compile_expr e ++ popq rax
+        ++ cmpq (imm 0) (reg rax)
+        (* verifies condition state after executing code block, exits if false *)
+        ++ jne (Printf.sprintf ".do_begin%d" lloop)
+        ++ label (Printf.sprintf ".do_exit%d" lloop)
+    | For (i, e, c, block) ->
+        lloop := !lloop + 1;
+        let lloop = !lloop in
+        Hashtbl.replace genv i ();
+        compile_expr e ++ popq rax
+        ++ movq (reg rax) (lab i)
+        ++ label (Printf.sprintf ".do_begin%d" lloop)
+        ++ compile_expr c ++ popq rax
+        ++ cmpq (imm 0) (reg rax)
+        ++ je (Printf.sprintf ".do_exit%d" lloop)
+        ++
+        let code = List.map compile_instr block in
+        let code = List.fold_left ( ++ ) nop code in
+        code
+        ++ jmp (Printf.sprintf ".do_begin%d" lloop)
+        ++ label (Printf.sprintf ".do_exit%d" lloop)
 
-      label (Printf.sprintf ".do_begin%d" lloop)
-      (* compile stop condition *)
-      ++ compile_expr e ++ popq rax
-      ++ cmpq (imm 0) (reg rax)
-      (* if its result's false, exit the loop *)
-      ++ je (Printf.sprintf ".do_exit%d" lloop)
-      ++
-      let code = List.map compile_instr b in
-      let code = List.fold_left ( ++ ) nop code in
-      code
-      ++ jmp (Printf.sprintf ".do_begin%d" lloop)
-      ++ label (Printf.sprintf ".do_exit%d" lloop)
-  | Dowhile (e, b) ->
-      lloop := !lloop + 1;
-      let lloop = !lloop in
+        *)
+    | Control c -> (
+        match c with
+        | Exit -> jmp (Printf.sprintf ".do_exit%d" !lloop)
+        | Continue -> jmp (Printf.sprintf ".do_begin%d" !lloop))
+  in
 
-      label (Printf.sprintf ".do_begin%d" lloop) ++
-      (* executes code block at least once *)
-      let code = List.map compile_instr b in
-      let code = List.fold_left ( ++ ) nop code in
-      code ++ compile_expr e ++ popq rax
-      ++ cmpq (imm 0) (reg rax)
-      (* verifies condition state after executing code block, exits if false *)
-      ++ jne (Printf.sprintf ".do_begin%d" lloop)
-      ++ label (Printf.sprintf ".do_exit%d" lloop)
-
-  | For (i, e, c, block) ->
-    lloop := !lloop + 1;
-    let lloop = !lloop in 
-    Hashtbl.replace genv i ();
-    compile_expr e ++ popq rax ++ movq (reg rax) (lab i) ++
-
-    label (Printf.sprintf ".do_begin%d" lloop) ++
-    compile_expr c ++ 
-    popq rax ++ cmpq (imm 0) (reg rax) ++
-    je (Printf.sprintf ".do_exit%d" lloop) ++
-    let code = List.map compile_instr block in
-      let code = List.fold_left ( ++ ) nop code in
-      code
-      ++ jmp (Printf.sprintf ".do_begin%d" lloop)
-    ++ label (Printf.sprintf ".do_exit%d" lloop)
-
-  | Control c -> (
-      match c with
-      | Exit -> jmp (Printf.sprintf ".do_exit%d" c_loop)
-      | Continue -> jmp (Printf.sprintf ".do_begin%d" c_loop))
-
-
+  comprec env inst
 
 (* Compila o programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
-  let code = List.map compile_instr p in
+  let code = List.map (compile_instr [StrMap.create 8]) p in
   let code = List.fold_right ( ++ ) code nop in
   if !frame_size mod 16 = 8 then frame_size := 8 + !frame_size;
   let p =
@@ -257,23 +306,17 @@ let compile_program p ofile =
         ++ code
         ++ movq (imm 0) (reg rax)
         ++ movq (reg rbp) (reg rsp)
-        ++ popq rbp ++ ret ++
-        
-        label "println_int"
+        ++ popq rbp ++ ret ++ label "println_int"
         ++ pushq (reg rbp)
         ++ movq (reg rdi) (reg rsi)
         ++ leaq (lab ".Sprintln_int") rdi
         ++ movq (imm 0) (reg rax)
-        ++ call "printf" ++ popq rbp ++ ret ++ 
-        
-        label "print_int"
+        ++ call "printf" ++ popq rbp ++ ret ++ label "print_int"
         ++ pushq (reg rbp)
         ++ movq (reg rdi) (reg rsi)
         ++ leaq (lab ".Sprint_int") rdi
         ++ movq (imm 0) (reg rax)
-        ++ call "printf" ++ popq rbp ++ ret ++
-
-        label "read_int"
+        ++ call "printf" ++ popq rbp ++ ret ++ label "read_int"
         ++ pushq (reg rbp)
         ++ leaq (lab ".Sprint_int") rdi
         ++ movq (imm 0) (reg rax)

@@ -40,7 +40,7 @@ prog:
 ;
 
 stmt:
-| DECLARE id = IDENT e = assign?                                              { Declare (id, e)}
+| DECLARE id = IDENT e = assign?                                              { Declare (id, e) }
 | SET id = IDENT ASSIGN e = expr                                              { Set (id, e) }
 | PRINT LP e = expr RP                                                        { Print e }
 | PRINTLN LP e = expr RP                                                      { Println e }

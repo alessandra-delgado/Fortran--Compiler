@@ -14,7 +14,6 @@ and stmt =
   | Whiledo of expr * stmt list
   | Dowhile of expr * stmt list
   | For of string * expr * expr * stmt list
-  (* todo: for*)
 
 and expr =
   | Cst of int
