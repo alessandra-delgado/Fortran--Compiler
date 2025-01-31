@@ -194,9 +194,13 @@ let compile_instr env inst =
         let lif = !lif in
         let else_block =
           match i2 with
-          | [] -> nop
+          | [] ->
+              (*no else statement: if condition is false jump to end *)
+              je (Printf.sprintf ".if_end%d" lif)
           | _ ->
               (*if the else statement is specified, compile the correspondent code*)
+              jne (Printf.sprintf ".if_true%d" lif)
+              ++
               let code = List.map (comprec (StrMap.create 8 :: env)) i2 in
               let code = List.fold_left ( ++ ) nop code in
               code ++ jmp (Printf.sprintf ".if_end%d" lif)
@@ -208,9 +212,6 @@ let compile_instr env inst =
         (*relational expr *)
         popq rax
         ++ cmpq (imm 0) (reg rax)
-        (* if result is not false, jump to true side *)
-        ++ jne (Printf.sprintf ".if_true%d" lif)
-        (* otherwise, execute the false side *)
         ++ else_block
         ++ label (Printf.sprintf ".if_true%d" lif)
         ++

@@ -1,34 +1,10 @@
-var x = 6
-println(x)
-
-var y = 8
-println(y)
-
-!*
-println(x)
-
-set x = 19
-println(x)
-
-println(let y = 10 in y + 5 + x)
-
-println(y)
-println(x)
-*!
+if 0 then 
+    println(2)
+end if
 
 
-do while(y > 5) (
-    set y = y - 1
-    println(y))
-end do
-set y = 8
-
-do (
-    set y = y - 1
-    println(y)
-    var x = 7
-    println(x))
-while(y > 5) end do
-
-println(x)
-println(y)
+if 0 then 
+    println(2) 
+else 
+    println(3)
+end if

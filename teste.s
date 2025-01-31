@@ -3,94 +3,29 @@
 main:
 	pushq %rbp
 	movq %rsp, %rbp
-	subq $32, %rsp
-	pushq $6
-	popq %rax
-	movq %rax, 0(%rbp)
-	movq 0(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call println_int
-	pushq $8
-	popq %rax
-	movq %rax, -8(%rbp)
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call println_int
-.do_begin1:
-	movq -8(%rbp), %rax
-	pushq %rax
-	pushq $5
-	popq %rax
-	popq %rbx
-	cmpq %rax, %rbx
-	setg %al
-	movzbq %al, %rax
-	pushq %rax
+	subq $0, %rsp
+	pushq $0
 	popq %rax
 	cmpq $0, %rax
-	je .do_exit1
-	movq -8(%rbp), %rax
-	pushq %rax
-	pushq $1
-	popq %rax
-	popq %rbx
-	subq %rax, %rbx
-	pushq %rbx
-	popq %rax
-	movq %rax, -8(%rbp)
-	movq -8(%rbp), %rax
-	pushq %rax
+	je .if_end1
+.if_true1:
+	pushq $2
 	popq %rdi
 	call println_int
-	jmp .do_begin1
-.do_exit1:
-	pushq $8
-	popq %rax
-	movq %rax, -8(%rbp)
-.do_begin2:
-	movq -8(%rbp), %rax
-	pushq %rax
-	pushq $1
-	popq %rax
-	popq %rbx
-	subq %rax, %rbx
-	pushq %rbx
-	popq %rax
-	movq %rax, -8(%rbp)
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call println_int
-	pushq $7
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq -16(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call println_int
-	movq -8(%rbp), %rax
-	pushq %rax
-	pushq $5
-	popq %rax
-	popq %rbx
-	cmpq %rax, %rbx
-	setg %al
-	movzbq %al, %rax
-	pushq %rax
+.if_end1:
+	pushq $0
 	popq %rax
 	cmpq $0, %rax
-	jne .do_begin2
-.do_exit2:
-	movq 0(%rbp), %rax
-	pushq %rax
+	jne .if_true2
+	pushq $3
 	popq %rdi
 	call println_int
-	movq -8(%rbp), %rax
-	pushq %rax
+	jmp .if_end2
+.if_true2:
+	pushq $2
 	popq %rdi
 	call println_int
+.if_end2:
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp
