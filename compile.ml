@@ -115,7 +115,7 @@ let compile_expr env e =
         if !frame_size = next then frame_size := 8 + !frame_size;
 
         (* Create new environment *)
-        let t = (StrMap.create 8) in
+        let t = StrMap.create 8 in
         StrMap.add t x next;
         comprec env next e1 ++ popq rax
         ++ movq (reg rax) (ind ~ofs:(-next) rbp)
@@ -125,11 +125,11 @@ let compile_expr env e =
 
 (* Instruction compiling *)
 let compile_instr env inst =
-  let rec comprec env inst=
+  let rec comprec env inst =
     match inst with
     | Declare (x, e) ->
         (* Increment frame size for storing variable address in stack*)
-        
+
         (* 1 - Search if variable exists in the current environment. *)
         (* Note: You can redeclare a variable, even if it is declared in surrounding environments,
           but never if it's already declared in the current one. *)
@@ -142,28 +142,26 @@ let compile_instr env inst =
               with Not_found -> StrMap.add hd x !frame_size)
           | [] -> failwith "No scope declared."
         in
-        
+
         (* 2 - Check if there is value to atribute to variable *)
-        let code = match e with
-        | Some expr ->
-            (* Compile expression using the new environment *)
-            compile_expr env expr
-            ++ popq rax
-            ++ movq (reg rax) (ind ~ofs:(-(!frame_size)) rbp)
-        | None ->
-            (*It is not required to atribute a value right away*)
-            nop
+        let code =
+          match e with
+          | Some expr ->
+              (* Compile expression using the new environment *)
+              compile_expr env expr ++ popq rax
+              ++ movq (reg rax) (ind ~ofs:(- !frame_size) rbp)
+          | None ->
+              (*It is not required to atribute a value right away*)
+              nop
         in
-          frame_size := 8 + !frame_size;
-          code
+        frame_size := 8 + !frame_size;
+        code
     | Set (x, e) -> (
         (* 1 - Search for variable in all active environments, prioritizing the nearest *)
         try
           let ofs = List.filter (fun e -> StrMap.mem e x) env in
           let ofs = StrMap.find (List.hd ofs) x in
-          compile_expr env e ++
-          popq rax ++
-          movq (reg rax) (ind ~ofs:(-ofs) rbp)
+          compile_expr env e ++ popq rax ++ movq (reg rax) (ind ~ofs:(-ofs) rbp)
         with Not_found ->
           failwith
             (Printf.sprintf "Variable '%s' is not declared in the scope." x))
@@ -186,14 +184,11 @@ let compile_instr env inst =
         try
           let ofs = List.map (fun e -> StrMap.find e x) env in
           let ofs = List.hd ofs in
-          leaq (ind ~ofs:(-ofs) rbp) rsi ++
-          call "read_int"
+          leaq (ind ~ofs:(-ofs) rbp) rsi ++ call "read_int"
         with Not_found ->
           failwith
-            (Printf.sprintf "Variable '%s' is not declared in the scope." x))
-    (*
-
-        (* todo: fix everything below :'3 *)
+            (Printf.sprintf "Variable '%s' is not declared in the scope." x)
+          (* todo: fix everything below :'3 *))
     | If (e, i1, i2) ->
         lif := !lif + 1;
         let lif = !lif in
@@ -202,7 +197,7 @@ let compile_instr env inst =
           | [] -> nop
           | _ ->
               (*if the else statement is specified, compile the correspondent code*)
-              let code = List.map (comprec env i2) in
+              let code = List.map (comprec (StrMap.create 8 :: env)) i2 in
               let code = List.fold_left ( ++ ) nop code in
               code ++ jmp (Printf.sprintf ".if_end%d" lif)
         in
@@ -219,34 +214,36 @@ let compile_instr env inst =
         ++ else_block
         ++ label (Printf.sprintf ".if_true%d" lif)
         ++
-        let code = List.map (compile_instr env i1) in
+        let code = List.map (comprec (StrMap.create 8 :: env)) i1 in
         let code = List.fold_left ( ++ ) nop code in
         code ++ label (Printf.sprintf ".if_end%d" lif)
     | Do b ->
+        let t = StrMap.create 8 in
         lloop := !lloop + 1;
         let lloop = !lloop in
 
         label (Printf.sprintf ".do_begin%d" lloop)
         ++
         (* executes code block infinitely *)
-        let code = List.map compile_instr b in
+        let code = List.map (comprec (t :: env)) b in
         let code = List.fold_left ( ++ ) nop code in
         code
         ++ jmp (Printf.sprintf ".do_begin%d" lloop)
         ++ label (Printf.sprintf ".do_exit%d" lloop)
     | Whiledo (e, b) ->
+        let t = StrMap.create 8 in
         lloop := !lloop + 1;
         let lloop = !lloop in
 
         label (Printf.sprintf ".do_begin%d" lloop)
         (* compile stop condition *)
-        ++ compile_expr e
+        ++ compile_expr env e
         ++ popq rax
         ++ cmpq (imm 0) (reg rax)
         (* if its result's false, exit the loop *)
         ++ je (Printf.sprintf ".do_exit%d" lloop)
         ++
-        let code = List.map compile_instr b in
+        let code = List.map (comprec (t :: env)) b in
         let code = List.fold_left ( ++ ) nop code in
         code
         ++ jmp (Printf.sprintf ".do_begin%d" lloop)
@@ -258,31 +255,34 @@ let compile_instr env inst =
         label (Printf.sprintf ".do_begin%d" lloop)
         ++
         (* executes code block at least once *)
-        let code = List.map compile_instr b in
+        let code = List.map (comprec (StrMap.create 8 :: env)) b in
         let code = List.fold_left ( ++ ) nop code in
-        code ++ compile_expr e ++ popq rax
+        code ++ compile_expr env e ++ popq rax
         ++ cmpq (imm 0) (reg rax)
         (* verifies condition state after executing code block, exits if false *)
         ++ jne (Printf.sprintf ".do_begin%d" lloop)
         ++ label (Printf.sprintf ".do_exit%d" lloop)
     | For (i, e, c, block) ->
+        let t = StrMap.create 8 in
         lloop := !lloop + 1;
         let lloop = !lloop in
-        Hashtbl.replace genv i ();
-        compile_expr e ++ popq rax
-        ++ movq (reg rax) (lab i)
+        frame_size := 8 + !frame_size;
+        (* In a for loop, the variable is inserted into the new environment *)
+        StrMap.add t i !frame_size;
+        let n_env = t :: env in
+        (* Compile the expression in current environment *)
+        compile_expr n_env e ++ popq rax
+        ++ movq (reg rax) (ind ~ofs:(- !frame_size) rbp)
         ++ label (Printf.sprintf ".do_begin%d" lloop)
-        ++ compile_expr c ++ popq rax
+        ++ compile_expr n_env c ++ popq rax
         ++ cmpq (imm 0) (reg rax)
         ++ je (Printf.sprintf ".do_exit%d" lloop)
         ++
-        let code = List.map compile_instr block in
+        let code = List.map (comprec n_env) block in
         let code = List.fold_left ( ++ ) nop code in
         code
         ++ jmp (Printf.sprintf ".do_begin%d" lloop)
         ++ label (Printf.sprintf ".do_exit%d" lloop)
-
-        *)
     | Control c -> (
         match c with
         | Exit -> jmp (Printf.sprintf ".do_exit%d" !lloop)
@@ -293,7 +293,7 @@ let compile_instr env inst =
 
 (* Compila o programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
-  let code = List.map (compile_instr [StrMap.create 8]) p in
+  let code = List.map (compile_instr [ StrMap.create 8 ]) p in
   let code = List.fold_right ( ++ ) code nop in
   if !frame_size mod 16 = 8 then frame_size := 8 + !frame_size;
   let p =

@@ -4,6 +4,7 @@ println(x)
 var y = 8
 println(y)
 
+!*
 println(x)
 
 set x = 19
@@ -13,3 +14,21 @@ println(let y = 10 in y + 5 + x)
 
 println(y)
 println(x)
+*!
+
+
+do while(y > 5) (
+    set y = y - 1
+    println(y))
+end do
+set y = 8
+
+do (
+    set y = y - 1
+    println(y)
+    var x = 7
+    println(x))
+while(y > 5) end do
+
+println(x)
+println(y)

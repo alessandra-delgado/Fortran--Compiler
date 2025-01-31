@@ -46,15 +46,15 @@ stmt:
 | PRINTLN LP e = expr RP                                                      { Println e }
 | READ LP id = IDENT RP                                                       { Read id }
 | IF e = expr THEN block = list(stmt) ei = els END IF                         { If (e, block, ei) }
-| DO w = whilebody                                                            { w }
+| DO w = whilebody END DO                                                     { w }
 | FOR i = IDENT ASSIGN e = expr CM c = expr CL block = list(stmt) END FOR     { For (i, e, c, block) }
 | c = ctrl                                                                    { Control c }
 ;
 
 whilebody:
-| block = list(stmt) END DO                                                   { Do (block) }
-| LP e = expr RP block = list(stmt) END DO                                    { Whiledo(e, block) }
-| DO block = list(stmt) WHILE LP e = expr RP END DO                           { Dowhile(e, block) }
+| WHILE LP e = expr RP LP block = list(stmt) RP                               { Whiledo(e, block) }
+| LP block = list(stmt) RP WHILE LP e = expr RP                               { Dowhile(e, block) }
+| LP block = list(stmt) RP                                                    { Do (block) }
 ;
 
 assign:
