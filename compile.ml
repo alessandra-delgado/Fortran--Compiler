@@ -214,10 +214,11 @@ let compile_instr env inst =
         ++ cmpq (imm 0) (reg rax)
         ++ else_block
         ++ label (Printf.sprintf ".if_true%d" lif)
-        ++
+        ++ (* compile code for true condition in a new environment *)
         let code = List.map (comprec (StrMap.create 8 :: env)) i1 in
         let code = List.fold_left ( ++ ) nop code in
         code ++ label (Printf.sprintf ".if_end%d" lif)
+
     | Do b ->
         let t = StrMap.create 8 in
         lloop := !lloop + 1;
