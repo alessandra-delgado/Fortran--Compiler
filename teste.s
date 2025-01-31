@@ -3,8 +3,7 @@
 main:
 	pushq %rbp
 	movq %rsp, %rbp
-<<<<<<< Updated upstream
-	subq $0, %rsp
+	subq $16, %rsp
 	pushq $0
 	popq %rax
 	cmpq $0, %rax
@@ -27,8 +26,6 @@ main:
 	popq %rdi
 	call println_int
 .if_end2:
-=======
-	subq $16, %rsp
 	pushq $1
 	popq %rax
 	movq %rax, 0(%rbp)
@@ -47,13 +44,12 @@ main:
 	pushq %rax
 	popq %rax
 	cmpq $0, %rax
-	jne .if_true1
-.if_true1:
+	je .if_end3
+.if_true3:
 	pushq $2
 	popq %rdi
 	call println_int
-.if_end1:
->>>>>>> Stashed changes
+.if_end3:
 	movq $0, %rax
 	movq %rbp, %rsp
 	popq %rbp
