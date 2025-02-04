@@ -13,7 +13,7 @@ and stmt =
   | Do of stmt list
   | Whiledo of expr * stmt list
   | Dowhile of expr * stmt list
-  | For of string * expr * expr * stmt list
+  | For of string * expr * expr * expr * stmt list
 
 and expr =
   | Cst of int
@@ -23,5 +23,5 @@ and expr =
   | Unop of unop * expr
 
 and binop = Add | Sub | Mul | Div | Mod | Eq | Ge | Gt | Le | Lt | Ne | Or | And | Xor
-and unop = Not
+and unop = Not (*| Inc | Dec*)
 and ctrl = Exit | Continue

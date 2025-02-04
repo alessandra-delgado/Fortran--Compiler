@@ -214,11 +214,11 @@ let compile_instr env inst =
         ++ cmpq (imm 0) (reg rax)
         ++ else_block
         ++ label (Printf.sprintf ".if_true%d" lif)
-        ++ (* compile code for true condition in a new environment *)
+        ++
+        (* compile code for true condition in a new environment *)
         let code = List.map (comprec (StrMap.create 8 :: env)) i1 in
         let code = List.fold_left ( ++ ) nop code in
         code ++ label (Printf.sprintf ".if_end%d" lif)
-
     | Do b ->
         let t = StrMap.create 8 in
         lloop := !lloop + 1;
@@ -264,25 +264,39 @@ let compile_instr env inst =
         (* verifies condition state after executing code block, exits if false *)
         ++ jne (Printf.sprintf ".do_begin%d" lloop)
         ++ label (Printf.sprintf ".do_exit%d" lloop)
-    | For (i, e, c, block) ->
+    | For (i, e, c, u, block) ->
         let t = StrMap.create 8 in
         lloop := !lloop + 1;
         let lloop = !lloop in
-        frame_size := 8 + !frame_size;
-        (* In a for loop, the variable is inserted into the new environment *)
-        StrMap.add t i !frame_size;
+        (* 1- In a for loop, the variable 'i' is inserted into the new environment *)
+        let i_ofs = !frame_size in
+        StrMap.add t i i_ofs;
         let n_env = t :: env in
-        (* Compile the expression in current environment *)
+        frame_size := 8 + !frame_size;
+
+        (* 2 - Compile the expression in current environment *)
         compile_expr n_env e ++ popq rax
-        ++ movq (reg rax) (ind ~ofs:(- !frame_size) rbp)
+        ++ movq (reg rax) (ind ~ofs:(-i_ofs) rbp)
+
+        (* 3 - For body *)
         ++ label (Printf.sprintf ".do_begin%d" lloop)
-        ++ compile_expr n_env c ++ popq rax
-        ++ cmpq (imm 0) (reg rax)
-        ++ je (Printf.sprintf ".do_exit%d" lloop)
+        (* Compile condition *)
+        ++ movq (ind ~ofs:(-i_ofs) rbp) (reg rbx) (* i value *)
+        ++ compile_expr n_env c
+        ++ popq rax (* end value*)
+        ++ cmpq (reg rax) (reg rbx) (* if i is greater or equal to end value, jump to exit*)
+        ++ jge (Printf.sprintf ".do_exit%d" lloop)
         ++
+        (* While condition true *)
         let code = List.map (comprec n_env) block in
         let code = List.fold_left ( ++ ) nop code in
         code
+        ++
+        (* 4 - Step update on i *)
+        compile_expr env u ++ popq rax
+        ++ movq (ind ~ofs:(-i_ofs) rbp) (reg rbx)
+        ++ addq (reg rax) (reg rbx)
+        ++ movq (reg rbx) (ind ~ofs:(-i_ofs) rbp)
         ++ jmp (Printf.sprintf ".do_begin%d" lloop)
         ++ label (Printf.sprintf ".do_exit%d" lloop)
     | Control c -> (

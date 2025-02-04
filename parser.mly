@@ -40,18 +40,18 @@ prog:
 ;
 
 stmt:
-| DECLARE id = IDENT e = assign?                                              { Declare (id, e) }
-| SET id = IDENT ASSIGN e = expr                                              { Set (id, e) }
-| PRINT LP e = expr RP                                                        { Print e }
-| PRINTLN LP e = expr RP                                                      { Println e }
-| READ LP id = IDENT RP                                                       { Read id }
-| IF e = expr THEN block = list(stmt) ei = els END IF                         { If (e, block, ei) }
-| DO w = whilebody                                                            { w }
-| FOR i = IDENT ASSIGN e = expr CM c = expr CL block = list(stmt) END FOR     { For (i, e, c, block) }
-| c = ctrl                                                                    { Control c }
+| DECLARE id = IDENT e = assign?                                                         { Declare (id, e) }
+| SET id = IDENT ASSIGN e = expr                                                         { Set (id, e) }
+| PRINT LP e = expr RP                                                                   { Print e }
+| PRINTLN LP e = expr RP                                                                 { Println e }
+| READ LP id = IDENT RP                                                                  { Read id }
+| IF e = expr THEN block = list(stmt) ei = els END IF                                    { If (e, block, ei) }
+| DO w = dobody                                                                          { w }
+| FOR i = IDENT ASSIGN e = expr CM c = expr u = update CL block = list(stmt) END FOR     { For (i, e, c, u, block) }
+| c = ctrl                                                                               { Control c }
 ;
 
-whilebody:
+dobody:
 | WHILE LP e = expr RP  block = list(stmt) END DO                             { Whiledo(e, block) }
 | block = list(stmt) END DO WHILE LP e = expr RP                              { Dowhile(e, block) }
 | block = list(stmt) END DO                                                   { Do (block) }
@@ -94,10 +94,17 @@ expr:
 ;
 
 %inline uop:
-| NOT                                                                         { Not }
+| NOT                                                                         { Not }(*
+| INC                                                                         { Inc }
+| DEC                                                                         { Dec }*)
 ;
 
 %inline ctrl:
 | EXIT                                                                        { Exit }
 | CONTINUE                                                                    { Continue }
+;
+
+%inline update:
+| CM c = expr                                                                 { c }
+|                                                                             { Cst 1 }
 ;
