@@ -7,14 +7,17 @@
 
 %token <int> CST
 %token <string> IDENT
-%token SET, LET, IN, PRINT, PRINTLN
+%token DECLARE, SET, LET, IN, PRINT, PRINTLN, READ
 %token EOF
-%token LP RP
+%token LP RP CM CL END
 %token PLUS MINUS TIMES DIV MOD
 %token ASSIGN
-%token IF, THEN, ELSE, END
+%token IF, THEN, ELSE
 %token EQ, GE, GT, LE, LT, NE
 %token AND, OR, XOR, NOT
+%token DO, WHILE, FOR
+%token EXIT, CONTINUE
+
 
 /* Definição das prioridades e associatividades dos tokens */
 
@@ -33,53 +36,75 @@
 %%
 
 prog:
-| p = stmts EOF { List.rev p }
-;
-
-stmts:
-| i = stmt           { [i] }
-| l = stmts i = stmt { i :: l }
+| p = list (stmt) EOF                                                               { p }
 ;
 
 stmt:
-| SET id = IDENT ASSIGN e = expr                                                  { Set (id, e) }
-| PRINT e = expr                                                              { Print e }
-| PRINTLN LP e = expr RP                                                      { Println e }
-| IF e = expr THEN block1 = list(stmt) ELSE block2 = list(stmt) END IF      {Ifelse (e, block1, block2)}
-| IF e = expr THEN block = list(stmt) END IF                                {If (e, block)}
+| DECLARE id = IDENT e = assign?                                                         { Declare (id, e) }
+| SET id = IDENT ASSIGN e = expr                                                         { Set (id, e) }
+| PRINT LP e = expr RP                                                                   { Print e }
+| PRINTLN LP e = expr RP                                                                 { Println e }
+| READ LP id = IDENT RP                                                                  { Read id }
+| IF e = expr THEN block = list(stmt) ei = els END IF                                    { If (e, block, ei) }
+| DO w = dobody                                                                          { w }
+| FOR i = IDENT ASSIGN e = expr CM c = expr u = update CL block = list(stmt) END FOR     { For (i, e, c, u, block) }
+| c = ctrl                                                                               { Control c }
+;
+
+dobody:
+| WHILE LP e = expr RP  block = list(stmt) END DO                             { Whiledo(e, block) }
+| block = list(stmt) END DO WHILE LP e = expr RP                              { Dowhile(e, block) }
+| block = list(stmt) END DO                                                   { Do (block) }
+;
+
+assign:
+| ASSIGN e = expr                                                             { e }
+;
+
+els:
+| ELSE block = list(stmt)                                                     { block }
+|                                                                             { [] }
 ;
 
 expr:
-| c = CST                           { Cst c }
-| id = IDENT                        { Var id }
-| e1 = expr o = op e2 = expr        { Binop (o, e1, e2) }
-| MINUS e = expr %prec uminus       { Binop (Sub, Cst 0, e) }
-| LET id = IDENT ASSIGN e1 = expr IN e2 = expr
-                                    { Letin (id, e1, e2) }
-| LP e = expr RP                    { e }
-| o = uop e = expr                   { Unop (o, e)}
-
+| c = CST                                                                     { Cst c }
+| id = IDENT                                                                  { Var id }
+| e1 = expr o = op e2 = expr                                                  { Binop (o, e1, e2) }
+| MINUS e = expr %prec uminus                                                 { Binop (Sub, Cst 0, e) }
+| LET id = IDENT ASSIGN e1 = expr IN e2 = expr                                { Letin (id, e1, e2) }
+| LP e = expr RP                                                              { e }
+| o = uop e = expr                                                            { Unop (o, e) }
 ;
 
 %inline op:
-| PLUS  { Add }
-| MINUS { Sub }
-| TIMES { Mul }
-| DIV   { Div }
-| MOD   { Mod }
-| EQ {Eq}
-| NE { Ne }
-| GT {Gt}
-| GE {Ge}
-| LT {Lt}
-| LE {Le}
-| OR {Or}
-| AND {And}
-| XOR {Xor}
+| PLUS                                                                        { Add }
+| MINUS                                                                       { Sub }
+| TIMES                                                                       { Mul }
+| DIV                                                                         { Div }
+| MOD                                                                         { Mod }
+| EQ                                                                          { Eq }
+| NE                                                                          { Ne }
+| GT                                                                          { Gt }
+| GE                                                                          { Ge }
+| LT                                                                          { Lt }
+| LE                                                                          { Le }
+| OR                                                                          { Or }
+| AND                                                                         { And }
+| XOR                                                                         { Xor }
 ;
 
 %inline uop:
-| NOT {Not}
+| NOT                                                                         { Not }(*
+| INC                                                                         { Inc }
+| DEC                                                                         { Dec }*)
 ;
 
+%inline ctrl:
+| EXIT                                                                        { Exit }
+| CONTINUE                                                                    { Continue }
+;
 
+%inline update:
+| CM c = expr                                                                 { c }
+|                                                                             { Cst 1 }
+;

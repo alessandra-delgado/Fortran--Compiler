@@ -8,13 +8,14 @@
 
 (menhir
  (modules parser)
- (merge_into parser))
+  (flags --explain --inspection --table --dump))
 
 ;; Gera o executavel teste.exe
 (executable
  (name main)
- (modules_without_implementation ast))
-
+ (modules_without_implementation ast)
+ (libraries menhirLib))
+ 
 (env
  (dev
   (flags
