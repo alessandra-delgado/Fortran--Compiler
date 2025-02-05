@@ -14,14 +14,19 @@ and stmt =
   | Whiledo of expr * stmt list
   | Dowhile of expr * stmt list
   | For of string * expr * expr * expr * stmt list
+  | Numop of sunop * string
 
 and expr =
   | Cst of int
   | Var of string
   | Binop of binop * expr * expr
   | Letin of string * expr * expr
-  | Unop of unop * expr
+  | Unop of eunop * expr
 
-and binop = Add | Sub | Mul | Div | Mod | Eq | Ge | Gt | Le | Lt | Ne | Or | And | Xor
-and unop = Not (*| Inc | Dec*)
+
 and ctrl = Exit | Continue
+and binop = Add | Sub | Mul | Div | Mod | Eq | Ge | Gt | Le | Lt | Ne | Or | And | Xor
+(* Expression unary op*)
+and eunop = Not
+(* Statement unary ops *)
+and sunop = Inc | Dec 
