@@ -14,7 +14,7 @@
 %token ASSIGN
 %token IF, THEN, ELSE
 %token EQ, GE, GT, LE, LT, NE
-%token AND, OR, XOR, NOT
+%token AND, OR, XOR, NOT, INC, DEC
 %token DO, WHILE, FOR
 %token EXIT, CONTINUE
 
@@ -42,6 +42,7 @@ prog:
 stmt:
 | DECLARE id = IDENT e = assign?                                                         { Declare (id, e) }
 | SET id = IDENT ASSIGN e = expr                                                         { Set (id, e) }
+| id = IDENT o = numop                                                                   { Numop (o, id)}
 | PRINT LP e = expr RP                                                                   { Print e }
 | PRINTLN LP e = expr RP                                                                 { Println e }
 | READ LP id = IDENT RP                                                                  { Read id }
@@ -94,9 +95,12 @@ expr:
 ;
 
 %inline uop:
-| NOT                                                                         { Not }(*
+| NOT                                                                         { Not }
+;
+
+%inline numop:
 | INC                                                                         { Inc }
-| DEC                                                                         { Dec }*)
+| DEC                                                                         { Dec }
 ;
 
 %inline ctrl:

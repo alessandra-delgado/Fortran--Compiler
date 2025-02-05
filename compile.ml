@@ -302,6 +302,24 @@ let compile_instr env inst =
         match c with
         | Exit -> jmp (Printf.sprintf ".do_exit%d" !lloop)
         | Continue -> jmp (Printf.sprintf ".do_begin%d" !lloop))
+    | Numop ((Inc | Dec) as o, x) ->
+      let numop = match o with
+      | Inc -> incq
+      | Dec -> decq
+    in
+    try
+      (* 1 - search for variable in nearest env *)
+      let ofs = List.filter (fun e -> StrMap.mem e x) env in
+      let ofs = StrMap.find (List.hd ofs) x in
+      movq (ind ~ofs:(-ofs) rbp) (reg rax) ++
+      numop (reg rax) ++
+      movq (reg rax) (ind ~ofs:(-ofs) rbp)
+
+    with Not_found ->
+      failwith
+        (Printf.sprintf "Variable '%s' is not declared in the scope." x)
+      (* todo: global vars*)
+    
   in
 
   comprec env inst

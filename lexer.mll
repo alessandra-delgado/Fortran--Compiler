@@ -32,6 +32,8 @@ rule token = parse
   | "!!" [^'\n']* '\n' { new_line lexbuf; token lexbuf }
   | space+  { token lexbuf }
   | ident as id { id_or_kwd id }
+  | "++"    { INC }
+  | "--"    { DEC }
   | '+'     { PLUS }
   | '-'     { MINUS }
   | '*'     { TIMES }
