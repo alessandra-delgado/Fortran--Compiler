@@ -1,4 +1,4 @@
-(* Sintaxe abstracta para a linguagem Arith *)
+(* Sintaxe abstracta *)
 
 type program = stmt list
 

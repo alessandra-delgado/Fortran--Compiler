@@ -58,14 +58,7 @@ main:
 	movq %rax, -8(%rbp)
 .do_begin1:
 	movq -8(%rbp), %rbx
-	pushq $7
-	pushq $0
-	popq %rax
-	popq %rbx
-	cmpq %rax, %rbx
-	setg %al
-	movzbq %al, %rax
-	pushq %rax
+	pushq $8
 	popq %rax
 	cmpq %rax, %rbx
 	jge .do_exit1

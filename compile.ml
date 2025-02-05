@@ -187,8 +187,7 @@ let compile_instr env inst =
           leaq (ind ~ofs:(-ofs) rbp) rsi ++ call "read_int"
         with Not_found ->
           failwith
-            (Printf.sprintf "Variable '%s' is not declared in the scope." x)
-          (* todo: fix everything below :'3 *))
+            (Printf.sprintf "Variable '%s' is not declared in the scope." x))
     | If (e, i1, i2) ->
         lif := !lif + 1;
         let lif = !lif in
