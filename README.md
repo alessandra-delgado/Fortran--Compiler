@@ -1,3 +1,4 @@
-# Fortran--Compiler
-Fortran but worse in every aspect
-disclaimer: this is nothing but a joke because I have free will
+# Fortran-- Compiler
+Fortran-- (F--) is Fortran, but worse in every aspect.
+
+Disclaimer: F-- is an esoteric language and thefore should not be taken _that_ seriously.
